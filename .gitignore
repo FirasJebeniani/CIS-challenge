@@ -1,0 +1,20 @@
+# Secrets and generated material: never commit
+keys/private/
+keys/public/
+certs/
+state/
+*.key
+*.pem
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

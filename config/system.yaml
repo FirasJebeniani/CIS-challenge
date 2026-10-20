@@ -1,0 +1,29 @@
+# System configuration (Layers 1a/1b). Relative paths are from the repo root.
+
+mqtt:
+  host: localhost
+  port: 8883
+  topic_prefix: cis/v1/readings   # one topic per sensor: cis/v1/readings/<sensor_id>
+  qos: 1
+  keepalive: 60
+  tls:
+    ca_cert: certs/ca.crt
+    client_certs_dir: certs/clients   # <client_id>.crt/.key, created by tools.generate_certs
+
+sensors:
+  - id: sensor_01
+    kind: temperature
+    low: 20.0
+    high: 30.0
+  - id: sensor_02
+    kind: temperature
+    low: 20.0
+    high: 30.0
+  - id: sensor_03
+    kind: temperature
+    low: 20.0
+    high: 30.0
+
+interval_s: 2.0
+keys_dir: keys
+state_dir: state
