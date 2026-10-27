@@ -46,6 +46,15 @@ chapters to combine — the remote-sensing input is not optional for this attack
 network spans only ~1–4 ERA5 cells, so the external reference is a network-wide check, not a
 per-station one — which the temporal/spatial detectors already cover.)
 
+## Escape magnitude (evasion) — reference baseline
+
+`eval/escape.py` sweeps each family's size and reports the largest the detector still misses.
+Against the `baseline_combined` reference (one showcase window per family), the escape magnitudes are:
+offset 3·σ_ref, noise 2·σ_ref, cycle_shaped 2·σ_ref, network_bias 2·σ_ref, rain_scale ×3, rain_inject 3 mm·scale.
+Every other family was caught at the smallest probed size (NaN = no residual escape, or no size parameter).
+Read this as the reference floor's blind spots; the team detector should push these boundaries lower,
+and the same command run against it gives the honest "below this, residual risk" line for the report.
+
 ## Efficiency & security overhead
 
 Measured on a 16-core laptop, Python 3.12, `cryptography` 50.0.2 (Ed25519), n = 10 000 records.

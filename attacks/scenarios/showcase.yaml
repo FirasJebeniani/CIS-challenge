@@ -143,3 +143,12 @@ scenarios:
     end: "2024-07-21T06:00:00Z"        # 24 h; only a cross-source check catches this
     params: {k: 2.0}
     split: showcase
+
+  - id: showcase-value_replay-ai-0015
+    family: value_replay
+    variable: air_temperature
+    stations: ["77"]
+    start: "2024-07-22T00:00:00Z"
+    end: "2024-07-23T00:00:00Z"        # 24 h; verbatim copy of 77's readings from 7 days earlier
+    params: {days_back: 7.0, noise: 0.33}
+    split: showcase

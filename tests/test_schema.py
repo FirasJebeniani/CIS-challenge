@@ -75,6 +75,7 @@ def test_required_params_table():
         "realistic_replace": {"k", "generator"},
         "cycle_shaped": {"k"},
         "network_bias": {"k"},
+        "value_replay": {"days_back", "noise"},
     }
 
 

@@ -1,12 +1,9 @@
-# Project Guide (plain language)
+# Project Guide
 
 **What this project is:** a test rig for Track 2 (False-Data Injection). It takes real,
 clean weather-station data, fakes parts of it in many ways, and scores how well a detector
-catches the fakes. **It is 100% ground weather-station data — no satellite images, nothing
-from the other tracks.**
+catches the fakes.
 
-Think of it as building an **exam** (the fakes + answer key) and a **grader** (the scoring)
-for your teammates' **detective** (the detector).
 
 ---
 

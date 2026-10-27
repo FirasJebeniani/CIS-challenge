@@ -71,6 +71,7 @@ Phase 2 "Held-out standard attack & evasion" (20, first tie-breaker) — and fal
 | `rain_inject` | adds a triangular event of total R mm over D when station and 5-NN are dry | R, D | Spike / pulse |
 | `realistic_replace` | window resampled from the station's own 30-day history (marginal stats preserved) + k·σ_ref bias | k, generator | Synthetic mimicry |
 | `cycle_shaped` | bias k·σ_ref modulated by the station's diurnal amplitude (rides inside the daily cycle) | k | Pattern masking |
+| `value_replay` *(heldout)* | verbatim copy of the station's window from `days_back` days ago + noise·σ_ref | days_back, noise | Replay (value-level, strong evasion) |
 | `network_bias` *(held-out)* | k·σ_ref offset on **all** stations in the pool at once (defeats neighbour consistency) | k | Colluding neighbours (network-wide) |
 
 The last three are specified in plan Tasks 15, 16, 18 — all remain synthetic perturbations of public data, scored by the same harness to quantify where the detector is weak. `realistic_replace` and `cycle_shaped` are designed so that spatial/cross-source detectors still catch them; `network_bias` is the case only cross-source catches, and motivates the remote-sensing component.

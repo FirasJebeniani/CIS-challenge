@@ -38,6 +38,10 @@ families:
   intermittent_offset:        # held-out only: offset on alternating 1 h blocks
     k: [1.5, 3]
     duration_h: [48, 120]
+  value_replay:               # held-out only: verbatim past-window replay + noise (strong evasion)
+    days_back: [1, 7]
+    noise: [0.0, 0.33]
+    duration_h: [24, 48]
   rain_scale:
     f: [0.75, 2.5]
     duration_h: [12]

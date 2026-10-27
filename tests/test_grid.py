@@ -69,6 +69,7 @@ def test_expand_counts_heldout():
         "multi_offset": 1 * 2 * 1,  # k 3  x n 4,6  x one fixed 48 h window
         "gain": 3 * 2,  # g 0.5,1.5,2  x durations 24,72 h
         "intermittent_offset": 2 * 2,  # k 1.5,3  x durations 48,120 h
+        "value_replay": 2 * 2 * 2,  # days_back 1,7  x noise 0,0.33  x durations 24,48 h
     }
     precip_cells = {
         "rain_scale": 2 * 1,  # f 0.75,2.5  x duration 12 h
@@ -78,12 +79,12 @@ def test_expand_counts_heldout():
     reps = 2
     expected = {f: n * N_VALUE_VARS * reps for f, n in value_cells.items()}
     expected |= {f: n * 1 * reps for f, n in precip_cells.items()}
-    assert sum(value_cells.values()) == 42
+    assert sum(value_cells.values()) == 50
     assert sum(precip_cells.values()) == 5
-    assert sum(expected.values()) == 42 * 2 * 2 + 5 * 2 == 178
+    assert sum(expected.values()) == 50 * 2 * 2 + 5 * 2 == 210
 
     specs = expand(_grid("heldout"))
-    assert len(specs) == 178
+    assert len(specs) == 210
     assert Counter(s["family"] for s in specs) == expected
 
 
@@ -191,7 +192,7 @@ def test_expand_is_deterministic():
 
 def test_heldout_values_disjoint_from_dev():
     dev, held = expand(_grid("dev")), expand(_grid("heldout"))
-    assert len(dev) != len(held)  # different sizes (342 vs 178)
+    assert len(dev) != len(held)  # different sizes (342 vs 210)
 
     def values(specs, family):
         out: dict[str, set[float]] = {"duration_steps": set()}

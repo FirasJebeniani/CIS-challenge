@@ -257,7 +257,7 @@ def inject(
             context = None
             if sc.family in CONTEXT_FAMILIES:
                 tod = _tod_bins(table.index[i0:i1])
-                if sc.family == "realistic_replace":
+                if sc.family in ("realistic_replace", "value_replay"):
                     context = {"history": src[max(0, i0 - HIST_STEPS):i0, j].astype(np.float64),
                                "tod_index": tod}
                 else:  # cycle_shaped

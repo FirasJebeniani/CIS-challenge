@@ -343,3 +343,32 @@ def test_network_bias_is_plain_offset_at_station_level():
     x = f32(1, 2, 3, 4)
     out = apply_fault("network_bias", x, {"k": 2.0}, sigma=0.5, rng=rng(0), prev=0.0)
     assert np.allclose(out, x + 1.0)  # fan-out across stations is the injector's job
+
+
+from attacks.families import value_replay  # noqa: E402
+
+
+def test_value_replay_copies_a_real_past_window():
+    history = np.arange(288 * 10, dtype=np.float32)  # strictly increasing: each day differs
+    x = np.full(288, 999.0, dtype=np.float32)
+    out = value_replay(x, {"days_back": 7.0, "noise": 0.0}, sigma=1.0, rng=rng(0),
+                       history=history, tod_index=np.arange(288))
+    # 7 days back from the end of history, same length -> exact verbatim copy
+    start = len(history) - 7 * 288
+    assert np.array_equal(out, history[start:start + 288])
+
+
+def test_value_replay_noise_adds_scatter_but_keeps_mean():
+    history = np.full(288 * 10, 20.0, dtype=np.float32)
+    x = np.full(288, 0.0, dtype=np.float32)
+    out = value_replay(x, {"days_back": 1.0, "noise": 0.5}, sigma=2.0, rng=rng(1),
+                       history=history, tod_index=np.arange(288))
+    assert abs(out.mean() - 20.0) < 0.2 and out.std() > 0.5  # scattered around the replayed level
+
+
+def test_value_replay_input_not_mutated():
+    x = np.full(288, 5.0, dtype=np.float32)
+    before = x.copy()
+    value_replay(x, {"days_back": 1.0, "noise": 0.0}, 1.0, rng(0),
+                 history=np.arange(288 * 5, dtype=np.float32), tod_index=np.arange(288))
+    assert np.array_equal(x, before)

@@ -189,6 +189,35 @@ def _ar1_generate(hist, hist_tod, tod_index, rng):
     return mean_series + e
 
 
+def value_replay(
+    x: np.ndarray,
+    params: Params,
+    sigma: float,
+    rng: np.random.Generator,
+    *,
+    history: np.ndarray,
+    tod_index: np.ndarray,
+) -> np.ndarray:
+    """Replace the window with a VERBATIM past window of the station, plus optional noise.
+
+    A real past day's readings have perfect marginal and temporal statistics, so this is a
+    strong evasion case (inspired by replay-with-noise attacks). ``params``: ``days_back`` (how
+    many days ago to copy, keeping the time-of-day aligned) and ``noise`` (added N(0, (noise·σ)²),
+    0 = exact replay). ``history`` is the station's clean values immediately before the window.
+    """
+    x = np.asarray(x, dtype=np.float64)
+    history = np.asarray(history, dtype=np.float64)
+    n = len(x)
+    start = len(history) - int(round(params["days_back"])) * DAY_STEPS
+    if start < 0 or start + n > len(history):  # not enough history: use the earliest aligned window
+        start = max(0, len(history) - n)
+    past = history[start:start + n]
+    if len(past) < n:  # extremely short history: tile to length
+        past = np.resize(past, n) if len(past) else np.zeros(n)
+    noise = params.get("noise", 0.0) * sigma
+    return past + (rng.normal(0.0, noise, n) if noise else 0.0)
+
+
 def cycle_shaped(
     x: np.ndarray,
     params: Params,
@@ -207,7 +236,11 @@ def cycle_shaped(
     return x + params["k"] * sigma * np.asarray(diurnal, dtype=np.float64)
 
 
-_CONTEXT_FAULTS = {"realistic_replace": realistic_replace, "cycle_shaped": cycle_shaped}
+_CONTEXT_FAULTS = {
+    "realistic_replace": realistic_replace,
+    "cycle_shaped": cycle_shaped,
+    "value_replay": value_replay,
+}
 CONTEXT_FAMILIES = tuple(_CONTEXT_FAULTS)  # families that need a context dict
 FAMILIES = tuple(_FAULTS) + CONTEXT_FAMILIES
 

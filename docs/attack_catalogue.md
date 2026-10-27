@@ -20,6 +20,7 @@ of σ_ref (a station's normal disagreement with its 5 nearest neighbours: ~0.59 
 | `rain_suppress` | precipitation → 0 in a wet window | — | L1/L3 temporal | constancy + cross-source | missed rainfall event | ✅ |
 | `rain_inject` | triangular event of R mm added when dry | R, D | L3 spatial + cross-source | dry-neighbour disagreement | phantom rainfall (false claim) | ✅ |
 | `realistic_replace` | window resampled from the station's own history + k·σ bias | k, generator | L3 spatial + cross-source | neighbour/cross-source (marginals look right) | plausible but false series | ✅ |
+| `value_replay` | verbatim copy of the station's readings from `days_back` days ago + noise·σ | days_back, noise | L3 spatial + cross-source | neighbour/cross-source (temporal stats are real) | stale data passed as fresh (strong evasion) | ✅ (heldout) |
 | `cycle_shaped` | k·σ bias modulated by the diurnal shape | k | L3 spatial + cross-source | neighbour/cross-source (temporal baseline fooled) | false change hidden in daily cycle | ✅ |
 | `network_bias` | whole network shifted by k·σ together | k | **cross-source only** | ERA5 / satellite reference | undetectable with station data alone | ✅ (heldout) |
 | `gain` | window mean + g·(value − mean) | g | L3 temporal | residual variance | amplified/damped variability | ✅ (heldout) |

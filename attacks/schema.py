@@ -25,6 +25,7 @@ Family = Literal[
     "realistic_replace",
     "cycle_shaped",
     "network_bias",
+    "value_replay",
 ]
 
 Variable = Literal["air_temperature", "relative_humidity", "precipitation"]
@@ -47,6 +48,7 @@ REQUIRED_PARAMS: dict[Family, set[str]] = {
     "realistic_replace": {"k", "generator"},
     "cycle_shaped": {"k"},
     "network_bias": {"k"},
+    "value_replay": {"days_back", "noise"},
 }
 
 RAIN_FAMILIES: frozenset[str] = frozenset(
