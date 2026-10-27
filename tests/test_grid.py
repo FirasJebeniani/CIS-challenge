@@ -290,10 +290,12 @@ def test_showcase_loads_and_covers_all_families():
     mo = by_family["multi_offset"]
     assert len(mo.stations) == int(mo.params["n"])
     assert len(set(mo.stations)) == len(mo.stations)
-    # every non-multi scenario is on station 77 alone
+    # every single-station scenario is on station 77 alone (multi_offset and network_bias
+    # deliberately span a cluster)
     for s in suite.scenarios:
-        if s.family != "multi_offset":
+        if s.family not in ("multi_offset", "network_bias"):
             assert s.stations == ("77",), s.id
+    assert by_family["network_bias"].stations[0] == "77"
 
     # the flatline window is exactly w_steps long; rain_inject window = duration_steps
     step = timedelta(minutes=5)

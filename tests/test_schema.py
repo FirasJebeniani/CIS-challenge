@@ -72,6 +72,9 @@ def test_required_params_table():
         "rain_scale": {"f"},
         "rain_suppress": set(),
         "rain_inject": {"total_mm", "duration_steps"},
+        "realistic_replace": {"k", "generator"},
+        "cycle_shaped": {"k"},
+        "network_bias": {"k"},
     }
 
 

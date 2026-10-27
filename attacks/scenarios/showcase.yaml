@@ -116,3 +116,30 @@ scenarios:
     end: "2024-07-16T15:00:00Z"        # 3 h = duration_steps, dry at 77 and its 5 nearest
     params: {total_mm: 10.0, duration_steps: 36.0}
     split: showcase
+
+  - id: showcase-realistic_replace-ai-0012
+    family: realistic_replace
+    variable: air_temperature
+    stations: ["77"]
+    start: "2024-07-19T00:00:00Z"
+    end: "2024-07-20T00:00:00Z"        # 24 h; window resampled from 77's own prior 30 days
+    params: {k: 1.0, generator: 0.0}   # generator 0 = empirical resample by time-of-day
+    split: showcase
+
+  - id: showcase-cycle_shaped-re-0013
+    family: cycle_shaped
+    variable: relative_humidity
+    stations: ["77"]
+    start: "2024-07-19T00:00:00Z"
+    end: "2024-07-20T00:00:00Z"        # 24 h; bias rides inside 77's diurnal RH cycle
+    params: {k: 2.0}
+    split: showcase
+
+  - id: showcase-network_bias-ai-0014
+    family: network_bias
+    variable: air_temperature
+    stations: ["77", "92", "76"]       # whole local cluster shifted together
+    start: "2024-07-20T06:00:00Z"
+    end: "2024-07-21T06:00:00Z"        # 24 h; only a cross-source check catches this
+    params: {k: 2.0}
+    split: showcase

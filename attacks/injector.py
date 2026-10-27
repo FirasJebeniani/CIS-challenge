@@ -19,9 +19,13 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from attacks.families import apply_fault, clip_physical, delta_onset
+from attacks.families import CONTEXT_FAMILIES, apply_fault, clip_physical, delta_onset
 from attacks.schema import Scenario, Suite
 from data_prep.wegenernet import UNITS
+
+HIST_STEPS = 30 * 288  # realistic_replace draws on the station's prior 30 days
+DAY_STEPS = 288
+CLEAN_DIR = Path(__file__).resolve().parents[1] / "data" / "clean"
 
 LABEL_COLUMNS = [
     "scenario_id",
@@ -97,6 +101,21 @@ def _load_neighbors() -> pd.DataFrame:
     return pd.read_csv(DEFAULT_NEIGHBORS, dtype={"station": str, "neighbor": str})
 
 
+def _load_diurnal(variable: str) -> pd.DataFrame:
+    path = CLEAN_DIR / f"diurnal_{variable}.parquet"
+    if not path.exists():
+        raise FileNotFoundError(
+            f"cycle_shaped needs {path}; build it with data_prep.build or pass diurnal=..."
+        )
+    tbl = pd.read_parquet(path)
+    tbl.columns = tbl.columns.astype(str)
+    return tbl
+
+
+def _tod_bins(index: pd.DatetimeIndex) -> np.ndarray:
+    return (index.hour.to_numpy() * 12 + index.minute.to_numpy() // 5).astype(int)
+
+
 def _neighbor_lists(neighbors: pd.DataFrame) -> dict[str, list[str]]:
     """station -> its neighbours ordered by rank (nearest first)."""
     table = neighbors.assign(
@@ -151,6 +170,7 @@ def inject(
     sigma: pd.DataFrame,
     *,
     neighbors: pd.DataFrame | None = None,
+    diurnal: dict[str, pd.DataFrame] | None = None,
 ) -> tuple[dict[str, pd.DataFrame], pd.DataFrame]:
     """Return ``(faulted tables, labels)`` for ``suite`` stamped onto ``clean``.
 
@@ -234,8 +254,21 @@ def inject(
                 if sigma_based and not math.isfinite(sig):
                     raise ValueError(f"{sc.id}: no finite sigma_ref for {variable} station {station}")
 
+            context = None
+            if sc.family in CONTEXT_FAMILIES:
+                tod = _tod_bins(table.index[i0:i1])
+                if sc.family == "realistic_replace":
+                    context = {"history": src[max(0, i0 - HIST_STEPS):i0, j].astype(np.float64),
+                               "tod_index": tod}
+                else:  # cycle_shaped
+                    if diurnal is None or variable not in diurnal:
+                        diurnal = {**(diurnal or {}), variable: _load_diurnal(variable)}
+                    context = {"diurnal": diurnal[variable][station].to_numpy()[tod % DAY_STEPS]}
+
             # float64 end to end; clip before measuring the effective injected delta
-            faulted = clip_physical(variable, apply_fault(sc.family, x, sc.params, sig, rng, prev))
+            faulted = clip_physical(
+                variable, apply_fault(sc.family, x, sc.params, sig, rng, prev, context=context)
+            )
             idx_onset = delta_onset(sc.family, faulted - x, sig * (1.0 - _ONSET_RTOL))
 
             if variable not in outputs:

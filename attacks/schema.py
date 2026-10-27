@@ -22,6 +22,9 @@ Family = Literal[
     "rain_scale",
     "rain_suppress",
     "rain_inject",
+    "realistic_replace",
+    "cycle_shaped",
+    "network_bias",
 ]
 
 Variable = Literal["air_temperature", "relative_humidity", "precipitation"]
@@ -40,6 +43,10 @@ REQUIRED_PARAMS: dict[Family, set[str]] = {
     "rain_scale": {"f"},
     "rain_suppress": set(),
     "rain_inject": {"total_mm", "duration_steps"},
+    # generator is a float code: 0.0 = empirical resample, 1.0 = AR(1) (params is float-only)
+    "realistic_replace": {"k", "generator"},
+    "cycle_shaped": {"k"},
+    "network_bias": {"k"},
 }
 
 RAIN_FAMILIES: frozenset[str] = frozenset(

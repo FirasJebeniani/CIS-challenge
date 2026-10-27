@@ -414,3 +414,47 @@ def test_empty_suite_returns_copies_and_typed_empty_labels():
     for v in clean:
         pd.testing.assert_frame_equal(faulted[v], clean[v])
         assert faulted[v] is not clean[v]
+
+
+# --- Added families (15/16/18): realistic_replace, cycle_shaped, network_bias ---
+
+NEW_PARAMS = {
+    "realistic_replace": {"k": 1.0, "generator": 0.0},
+    "cycle_shaped": {"k": 2.0},
+    "network_bias": {"k": 2.0},
+}
+
+
+def test_network_bias_hits_every_listed_station():
+    sc = scen(0, "network_bias", stations=("1", "2", "3"), params=NEW_PARAMS["network_bias"])
+    _, labels = inject(suite_of(sc), make_clean(), SIGMA)
+    assert sorted(labels["station"]) == ["1", "2", "3"]
+    assert (labels["n_stations"] == 3).all()
+    assert (labels["family"] == "network_bias").all()
+
+
+def test_realistic_replace_rewrites_window_and_labels_once():
+    clean = make_clean()
+    sc = scen(0, "realistic_replace", stations=("1",), params=NEW_PARAMS["realistic_replace"])
+    faulted, labels = inject(suite_of(sc), clean, SIGMA)
+    mask = window_mask(labels, clean["air_temperature"], "air_temperature")
+    assert len(labels) == 1 and labels.iloc[0]["size"] == 1.0
+    # the window changed, and nothing outside it did
+    changed = faulted["air_temperature"].to_numpy() != clean["air_temperature"].to_numpy()
+    assert changed[mask].any()
+    assert not changed[~mask].any()
+
+
+def test_cycle_shaped_follows_supplied_diurnal():
+    clean = make_clean()
+    # a diurnal shape that is 0 for the first half of the window and 1 for the second
+    tod = pd.RangeIndex(288, name="tod_bin")
+    shape = pd.DataFrame({s: np.where(tod < 144, 0.0, 1.0) for s in STATIONS}, index=tod)
+    start = datetime(2024, 1, 2, 10, 0, tzinfo=timezone.utc)  # window spans the 12:00 (bin 144) step up
+    sc = scen(0, "cycle_shaped", stations=("1",), start=start, hours=6, params=NEW_PARAMS["cycle_shaped"])
+    faulted, labels = inject(suite_of(sc), clean, SIGMA, diurnal={"air_temperature": shape})
+    i0 = clean["air_temperature"].index.get_loc(pd.Timestamp(start))
+    delta = (faulted["air_temperature"].to_numpy() - clean["air_temperature"].to_numpy())[:, 0]
+    win = delta[i0 : i0 + 72]  # 6 h = 72 steps
+    assert np.allclose(win.max(), 2.0 * SIGMA.loc["1", "air_temperature"], atol=1e-4)
+    assert np.isclose(win[:24].max(), 0.0)  # first 2 h (tod 120..143) are below the diurnal step

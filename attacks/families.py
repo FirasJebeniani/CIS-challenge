@@ -7,8 +7,10 @@ window is never mutated, a new array is returned, and all randomness comes from 
 Window semantics follow the design spec section 5. Fault sizes are in units of
 ``sigma`` (the station's sigma_ref); precipitation families ignore ``sigma``.
 
-Not implemented here (later plan tasks): ``realistic_replace``, ``cycle_shaped``,
-``network_bias``.
+``realistic_replace`` and ``cycle_shaped`` need per-station context (history / diurnal
+shape) and have their own signatures; ``apply_fault`` reaches them through its ``context``
+argument. ``network_bias`` is a plain per-station offset (the injector fans it to the
+whole pool), so it reuses ``_offset``.
 """
 
 from __future__ import annotations
@@ -119,8 +121,95 @@ _FAULTS: dict[str, _Fault] = {
     "rain_scale": _rain_scale,
     "rain_suppress": _rain_suppress,
     "rain_inject": _rain_inject,
+    "network_bias": _offset,  # per-station offset; injector applies it to the whole pool
 }
-FAMILIES = tuple(_FAULTS)
+
+DAY_STEPS = 288  # 5-min bins per day
+
+
+def realistic_replace(
+    x: np.ndarray,
+    params: Params,
+    sigma: float,
+    rng: np.random.Generator,
+    *,
+    history: np.ndarray,
+    tod_index: np.ndarray,
+) -> np.ndarray:
+    """Replace the window with values drawn from the station's OWN recent history.
+
+    Marginal/temporal statistics look right (so a purely single-station detector is
+    fooled), but the series is generated in isolation and ignores what the region
+    actually did in this window, so spatial/cross-source detectors still catch it.
+    ``params``: ``k`` (bias in sigma units) and ``generator`` (0 = empirical resample by
+    time-of-day, 1 = seasonal-mean + AR(1) residual). ``history`` is the station's clean
+    values immediately before the window; ``tod_index`` the window's 5-min-of-day bins.
+    """
+    x = np.asarray(x, dtype=np.float64)
+    history = np.asarray(history, dtype=np.float64)
+    hist = history[np.isfinite(history)]
+    bias = params["k"] * sigma
+    if hist.size == 0:
+        return np.full(len(x), bias, dtype=np.float64)
+    # time-of-day bin of each history sample (history ends just before the window)
+    hist_tod = (int(tod_index[0]) - len(history) + np.arange(len(history))) % DAY_STEPS
+    hist_tod = hist_tod[np.isfinite(history)]
+    if int(round(params.get("generator", 0.0))) == 1:
+        out = _ar1_generate(hist, hist_tod, tod_index, rng)
+    else:
+        out = _empirical_generate(hist, hist_tod, tod_index, rng)
+    return out + bias
+
+
+def _empirical_generate(hist, hist_tod, tod_index, rng):
+    by_tod = {t: hist[hist_tod == t] for t in np.unique(hist_tod)}
+    out = np.empty(len(tod_index), dtype=np.float64)
+    for i, t in enumerate(tod_index):
+        pool = by_tod.get(int(t) % DAY_STEPS)
+        pool = pool if pool is not None and pool.size else hist
+        out[i] = pool[rng.integers(pool.size)]
+    return out
+
+
+def _ar1_generate(hist, hist_tod, tod_index, rng):
+    tod_mean = {t: hist[hist_tod == t].mean() for t in np.unique(hist_tod)}
+    mean_series = np.array([tod_mean.get(int(t) % DAY_STEPS, hist.mean()) for t in tod_index])
+    resid = hist - np.array([tod_mean[t] for t in hist_tod])
+    sd = resid.std()
+    if resid.size > 1 and sd > 0:
+        phi = float(np.clip(np.corrcoef(resid[:-1], resid[1:])[0, 1], -0.95, 0.95))
+    else:
+        phi = 0.0
+    innov_sd = sd * np.sqrt(max(1.0 - phi * phi, 1e-6))
+    e = np.empty(len(tod_index))
+    prev = 0.0
+    for i in range(len(tod_index)):
+        prev = phi * prev + rng.normal(0.0, innov_sd)
+        e[i] = prev
+    return mean_series + e
+
+
+def cycle_shaped(
+    x: np.ndarray,
+    params: Params,
+    sigma: float,
+    rng: np.random.Generator,
+    *,
+    diurnal: np.ndarray,
+) -> np.ndarray:
+    """Add a bias of ``k * sigma`` modulated by the station's diurnal shape.
+
+    ``diurnal`` is the normalised (0..1) mean daily shape evaluated at the window's steps,
+    so the injected change is largest when the real signal naturally swings most and rides
+    inside the expected daily cycle. A flat (zero) diurnal shape leaves the window unchanged.
+    """
+    x = np.asarray(x, dtype=np.float64)
+    return x + params["k"] * sigma * np.asarray(diurnal, dtype=np.float64)
+
+
+_CONTEXT_FAULTS = {"realistic_replace": realistic_replace, "cycle_shaped": cycle_shaped}
+CONTEXT_FAMILIES = tuple(_CONTEXT_FAULTS)  # families that need a context dict
+FAMILIES = tuple(_FAULTS) + CONTEXT_FAMILIES
 
 
 def apply_fault(
@@ -130,23 +219,32 @@ def apply_fault(
     sigma: float,
     rng: np.random.Generator,
     prev: float,
+    *,
+    context: dict | None = None,
 ) -> np.ndarray:
     """Return the faulted copy of window ``x`` (same length; ``x`` is not modified).
 
     ``prev`` is the last clean value before the window; only ``stuck`` uses it.
-    Physical clipping is a separate step (``clip_physical``).
+    ``realistic_replace`` and ``cycle_shaped`` need extra per-station inputs, supplied in
+    ``context`` (``history`` + ``tod_index``, or ``diurnal``). Physical clipping is a
+    separate step (``clip_physical``).
     """
-    try:
-        fault = _FAULTS[family]
-    except KeyError:
-        raise ValueError(
-            f"family {family!r} is not an implemented value family; choose from {FAMILIES}"
-        ) from None
     x = np.asarray(x)
     if x.ndim != 1:
         raise ValueError(f"expected a 1-D window, got shape {x.shape}")
     out_dtype = np.result_type(x.dtype, np.float32)  # float32 stays float32
-    out = fault(x.astype(np.float64), params, float(sigma), rng, float(prev))
+    if family in _CONTEXT_FAULTS:
+        if context is None:
+            raise ValueError(f"family {family!r} needs a context dict ({_CONTEXT_FAULTS[family].__name__})")
+        out = _CONTEXT_FAULTS[family](x.astype(np.float64), params, float(sigma), rng, **context)
+    else:
+        try:
+            fault = _FAULTS[family]
+        except KeyError:
+            raise ValueError(
+                f"family {family!r} is not an implemented value family; choose from {FAMILIES}"
+            ) from None
+        out = fault(x.astype(np.float64), params, float(sigma), rng, float(prev))
     return np.asarray(out, dtype=out_dtype).copy()
 
 

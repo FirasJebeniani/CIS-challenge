@@ -244,10 +244,15 @@ def test_input_not_mutated(family, params):
     assert out.dtype == np.float32
 
 
-def test_unimplemented_or_unknown_family_is_rejected():
-    for name in ("realistic_replace", "cycle_shaped", "network_bias", "nonsense"):
+def test_unknown_family_is_rejected():
+    with pytest.raises(ValueError, match="nonsense"):
+        apply_fault("nonsense", zeros(4), {"k": 1.0}, 1.0, rng(), 0.0)
+
+
+def test_context_family_without_context_is_rejected():
+    for name in ("realistic_replace", "cycle_shaped"):
         with pytest.raises(ValueError, match=name):
-            apply_fault(name, zeros(4), {"k": 1.0}, 1.0, rng(), 0.0)
+            apply_fault(name, zeros(4), {"k": 1.0, "generator": 0.0}, 1.0, rng(), 0.0)
 
 
 def test_delta_onset_drift_is_first_step_reaching_one_sigma():
@@ -267,3 +272,74 @@ def test_delta_onset_is_zero_for_non_drift_families():
 def test_delta_onset_when_ramp_never_reaches_sigma_is_window_length():
     delta = np.linspace(0.0, 0.4, 20, dtype=np.float32)
     assert delta_onset("drift", delta, 1.0) == 20
+
+
+# --- Added families (Tasks 15, 16, 18): realistic_replace, cycle_shaped, network_bias ---
+
+from attacks.families import cycle_shaped, realistic_replace  # noqa: E402
+
+
+def test_realistic_replace_matches_marginal_mean():
+    # history around 10.0; window irrelevant to the output level
+    history = rng(1).normal(10.0, 1.0, size=288 * 30).astype(np.float32)
+    x = np.full(288, 50.0, dtype=np.float32)  # true window is nothing like history
+    tod = np.arange(288)
+    out = realistic_replace(x, {"k": 2.0, "generator": 0.0}, sigma=1.0, rng=rng(3),
+                            history=history, tod_index=tod)
+    assert abs(out.mean() - (history.mean() + 2.0)) < 0.1 * abs(history.mean())
+
+
+def test_realistic_replace_diverges_from_neighbours():
+    # history (and therefore the generated values) sit near 10; the real window and the
+    # neighbour both moved to ~30. The mimic ignores the regional move, so it diverges.
+    history = rng(1).normal(10.0, 1.0, size=288 * 30).astype(np.float32)
+    x = np.full(288, 30.0, dtype=np.float32)
+    neighbour = np.full(288, 30.0, dtype=np.float32)
+    out = realistic_replace(x, {"k": 0.0, "generator": 0.0}, sigma=1.0, rng=rng(3),
+                            history=history, tod_index=np.arange(288))
+    assert np.abs(out - neighbour).mean() > np.abs(x - neighbour).mean()
+
+
+def test_realistic_replace_input_not_mutated():
+    x = np.full(288, 50.0, dtype=np.float32)
+    before = x.copy()
+    realistic_replace(x, {"k": 1.0, "generator": 1.0}, sigma=1.0, rng=rng(3),
+                      history=rng(1).normal(10, 1, 288 * 30).astype(np.float32),
+                      tod_index=np.arange(288))
+    assert np.array_equal(x, before)
+
+
+def test_realistic_replace_same_seed_same_output():
+    kw = dict(history=rng(1).normal(10, 1, 288 * 30).astype(np.float32), tod_index=np.arange(288))
+    x = np.full(288, 50.0, dtype=np.float32)
+    a = realistic_replace(x, {"k": 1.0, "generator": 0.0}, 1.0, rng(5), **kw)
+    b = realistic_replace(x, {"k": 1.0, "generator": 0.0}, 1.0, rng(5), **kw)
+    assert np.array_equal(a, b)
+
+
+def test_cycle_shaped_peaks_with_diurnal():
+    x = np.zeros(288, dtype=np.float32)
+    diurnal = np.linspace(0.0, 1.0, 288).astype(np.float32)  # rises across the window
+    out = cycle_shaped(x, {"k": 3.0}, sigma=2.0, rng=rng(0), diurnal=diurnal)
+    delta = out - x
+    assert delta.argmax() == diurnal.argmax()
+    assert abs(delta.max() - 3.0 * 2.0) < 1e-4  # k*sigma at the diurnal peak (=1.0)
+
+
+def test_cycle_shaped_zero_amplitude_is_noop():
+    x = np.arange(48, dtype=np.float32)
+    out = cycle_shaped(x, {"k": 3.0}, sigma=2.0, rng=rng(0), diurnal=np.zeros(48, dtype=np.float32))
+    assert np.array_equal(out, x)
+
+
+def test_cycle_shaped_input_not_mutated():
+    x = np.arange(48, dtype=np.float32)
+    before = x.copy()
+    cycle_shaped(x, {"k": 3.0}, sigma=2.0, rng=rng(0), diurnal=np.linspace(0, 1, 48).astype(np.float32))
+    assert np.array_equal(x, before)
+
+
+def test_network_bias_is_plain_offset_at_station_level():
+    x = f32(1, 2, 3, 4)
+    out = apply_fault("network_bias", x, {"k": 2.0}, sigma=0.5, rng=rng(0), prev=0.0)
+    assert np.allclose(out, x + 1.0)  # fan-out across stations is the injector's job
