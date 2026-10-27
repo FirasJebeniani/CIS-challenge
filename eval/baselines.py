@@ -159,3 +159,26 @@ def _neighbor_precipitation(values: pd.DataFrame, neighbors: dict[str, list[str]
         limit = np.maximum(PRECIP_MIN_DIFF_MM, PRECIP_MEDIAN_FACTOR * reference)
         alarm[:, j] = np.abs(s[:, j] - reference) > limit
     return _as_frame(alarm, values)
+
+
+def crosssource_baseline(
+    values: pd.DataFrame,
+    reference: pd.Series,
+    sigma_area: float,
+    z: float = 4.0,
+    persist: int = 6,
+) -> pd.DataFrame:
+    """Flag a network-wide departure from an independent reference (the remote-sensing angle).
+
+    The network area-mean is compared to ``reference`` (ERA5 or an independent station cluster,
+    on the same index). When ``|area_mean - reference| / sigma_area > z`` for ``persist``
+    consecutive steps, every station is alarmed -- this is the one check that catches a
+    ``network_bias`` fault, which neighbour consistency is blind to because the whole network
+    moves together. ``sigma_area`` is the normal scatter of (area_mean - reference).
+    """
+    area = values.mean(axis=1).to_numpy(dtype=float)
+    ref = reference.reindex(values.index).to_numpy(dtype=float)
+    exceed = np.abs(area - ref) > z * float(sigma_area)
+    fired = _run_length(exceed[:, None])[:, 0] >= persist
+    alarm = np.repeat(fired[:, None], values.shape[1], axis=1)
+    return _as_frame(alarm, values)

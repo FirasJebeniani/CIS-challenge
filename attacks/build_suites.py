@@ -21,7 +21,7 @@ import pandas as pd
 from attacks.grid import expand, load_grid
 from attacks.injector import LABEL_COLUMNS, inject
 from attacks.placement import PlacementContext, place, split_stations
-from attacks.schema import Suite, dump_suite, load_suite
+from attacks.schema import Scenario, Suite, dump_suite, load_suite
 from data_prep.stations import distance_km
 
 VARS = ("air_temperature", "relative_humidity", "precipitation")
@@ -29,7 +29,8 @@ CLEAN = Path("data/clean")
 SUITES = Path("data/suites")
 SCENARIOS = Path(__file__).resolve().parent / "scenarios"
 GRID_FILES = {"smoke": "grid_smoke.yaml", "dev": "grid_dev.yaml", "heldout": "grid_heldout.yaml"}
-ALL_SUITES = (*GRID_FILES, "clean2024", "showcase")
+ALL_SUITES = (*GRID_FILES, "clean2024", "showcase", "crosssource")
+CROSSSOURCE_SEED = 20264
 
 
 def _sha(path: Path) -> str:
@@ -91,6 +92,38 @@ def _place_grid(name: str, clean, flags, clean_dir: Path) -> tuple[Suite, Path]:
     return Suite(name=name, seed=cfg.seed, scenarios=tuple(placed)), grid_path
 
 
+def _crosssource_suite(clean) -> Suite:
+    """network_bias over the whole held-out pool: every station shifted together.
+
+    Neighbour consistency is blind to this (all stations still agree); only the cross-source
+    reference catches it. Built directly (not via the grid) because the group is the whole pool.
+    """
+    from datetime import datetime, timedelta, timezone
+
+    # The whole network is shifted together: a held-out-only shift would still disagree with
+    # the unshifted stations among each station's neighbours, so neighbour consistency would
+    # catch it. Shifting every station is what truly defeats neighbour checks.
+    stations = tuple(clean["air_temperature"].columns)
+    windows = [  # (k, start, hours) on vetted mid-summer clean windows
+        (2.0, datetime(2024, 7, 5, 0, 0, tzinfo=timezone.utc), 24),
+        (3.0, datetime(2024, 7, 12, 0, 0, tzinfo=timezone.utc), 72),
+    ]
+    scenarios = tuple(
+        Scenario(
+            id=f"crosssource-network_bias-ai-{i:04d}",
+            family="network_bias",
+            variable="air_temperature",
+            stations=stations,
+            start=start,
+            end=start + timedelta(hours=hours),
+            params={"k": k},
+            split="heldout",
+        )
+        for i, (k, start, hours) in enumerate(windows)
+    )
+    return Suite(name="crosssource", seed=CROSSSOURCE_SEED, scenarios=scenarios)
+
+
 def _empty_labels() -> pd.DataFrame:
     frame = pd.DataFrame({c: pd.Series(dtype="object") for c in LABEL_COLUMNS})
     for c in ("start", "end", "onset"):
@@ -115,6 +148,10 @@ def build_suite(name: str, *, clean_dir: Path = CLEAN, out_dir: Path = SUITES) -
         suite = load_suite(SCENARIOS / "showcase.yaml")
         faulted, labels = inject(suite, clean, _sigma(clean_dir))
         config_src, scenarios = SCENARIOS / "showcase.yaml", suite
+    elif name == "crosssource":
+        suite = _crosssource_suite(clean)
+        faulted, labels = inject(suite, clean, _sigma(clean_dir))
+        config_src, scenarios = None, suite
     else:
         flags = _load_flags(clean_dir)
         suite, config_src = _place_grid(name, clean, flags, clean_dir)
