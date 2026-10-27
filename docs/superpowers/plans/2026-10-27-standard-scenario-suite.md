@@ -152,6 +152,12 @@
   - `place(specs: list[dict], ctx: PlacementContext, rng: np.random.Generator, max_tries: int = 200) -> list[Scenario]` — `PlacementContext` dataclass holds flags, precip values, distances, neighbours, pools, year 2024 index. Raises `PlacementError` naming the spec when it cannot place.
 - Rules from spec §6 (eligibility, months 4–10 for precipitation, wet-window minima 2 mm / 5 mm, dry station + dry 5-NN for `rain_inject`, 3 km / ±24 h conflict). `multi_offset` stations = target + its n−1 nearest neighbours, all from the same pool. Scenario ids: `f"{split}-{family}-{variable[:2]}-{index:04d}"`.
 
+**Integration notes from Task 6 (the implemented `injector.py`), placement MUST satisfy:**
+- For `multi_offset` with n up to 8, put **all n stations** (target + n−1 nearest, same pool) in the scenario's `stations` tuple. `neighbors.csv` only has ranks 1–5, so compute neighbours directly with `data_prep.stations.distance_km` / `nearest_neighbors(dist, k=n-1)`; do not rely on the 5-row CSV. The injector uses `stations` as-is when it already lists n of them.
+- For `stuck`, the window start must have a **finite** clean value in the row immediately before it (not just ≤ 5 % gap-filled inside the window), or the injector skips that station with a `RuntimeWarning` and writes no label.
+- Window `start`/`end` must land exactly on 5-min grid rows (end may equal last_row + 5 min). The injector raises on off-grid times.
+- Conflicts are per variable **and** per station: two windows overlapping on the same variable at a shared station raise in the injector, so placement's 3 km / ±24 h rule must prevent them.
+
 - [ ] **Step 1: Failing tests:** `test_split_is_deterministic_and_disjoint`, `test_window_rejected_when_gap_filled`, `test_precip_never_placed_in_winter`, `test_conflicting_scenarios_not_overlapping` (place 50 specs on a toy 6-station layout; assert pairwise rule), `test_rain_inject_window_is_dry`, `test_heldout_specs_use_heldout_stations_only`.
 - [ ] **Step 2:** Run → FAIL. **Step 3:** Implement (random start on 5-min grid inside 2024, retry until eligible and conflict-free; keep an interval list per variable). **Step 4:** Run → PASS.
 - [ ] **Step 5:** Commit `feat: scenario placement`.

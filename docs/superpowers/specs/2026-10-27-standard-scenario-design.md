@@ -88,8 +88,8 @@ Physical clipping after injection: RH ∈ [0, 100]; precipitation ≥ 0; T uncli
 | Suite | Purpose | Contents |
 |---|---|---|
 | `smoke` | fast iteration for teammates | ~30 scenarios, T only, 20 stations, June 2024 |
-| `dev` | development / tuning | ≈450 scenarios, dev stations (70 %), dev grid |
-| `heldout` | generalisation rehearsal | ≈250 scenarios, held-out stations (30 %), held-out grid + held-out-only families |
+| `dev` | development / tuning | ~340 base specs (pre-placement), dev stations (70 %), dev grid |
+| `heldout` | generalisation rehearsal | ~180 base specs + held-out-only families (gain, intermittent_offset) + Tasks 15/16/18 additions, held-out stations (30 %) |
 | `clean2024` | false-alarm rate | 2024 untouched |
 | `showcase` | demo + figures | one hand-written scenario per family |
 | `records_bc` | L1 verification | signed-record streams with B/C faults |
