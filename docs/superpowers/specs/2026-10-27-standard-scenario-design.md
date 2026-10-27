@@ -96,19 +96,24 @@ Physical clipping after injection: RH ∈ [0, 100]; precipitation ≥ 0; T uncli
 | `crosssource` | remote-sensing result | `network_bias` scenarios (plan Task 18) |
 | `adaptive_probe` | evasion/robustness | per-family escape-magnitude scenarios vs a given detector (plan Task 14) |
 
-Grids (σ_ref units unless stated):
+Grids (σ_ref units unless stated). Each row gives the swept parameter list(s) and the window duration; `expand` is the Cartesian product of the parameter list(s) × the durations × replicates × applicable variables. Replicates: dev 2, dev-precipitation 3, heldout 2, smoke 1. Value families (`offset, drift, spike, noise, flatline, stuck, multi_offset`) apply to `air_temperature` and `relative_humidity`; `rain_*` to `precipitation`; `gain, intermittent_offset` are **heldout-only**; `network_bias` is heldout-only (plan Task 18); `realistic_replace, cycle_shaped` have their own grids in plan Tasks 15/16.
 
-| | dev | heldout |
-|---|---|---|
-| offset/noise k | 0.5, 1, 2, 3, 5 | 0.75, 1.5, 4 |
-| durations | 1 h, 6 h, 24 h, 72 h | 12 h, 48 h, 120 h |
-| drift ramp | 24 h, 72 h, 168 h | 120 h, 240 h |
-| spike k / n | 2, 4, 8 / 1, 3, 6 | 3, 6 / 2, 4 |
-| flatline w | 1 h, 3 h, 6 h | 2 h, 4 h |
-| multi_offset n | 2, 3, 5, 8 | 4, 6 |
-| gain g | — | 0.5, 1.5, 2 |
-| rain_scale f | 0.5, 1.5, 2, 3 | 0.75, 2.5 |
-| rain_inject R / D | 2, 5, 10, 20 mm / 1 h, 3 h | 7, 15 mm / 2 h |
+| Family | dev params | dev duration(s) | heldout params | heldout duration(s) |
+|---|---|---|---|---|
+| `offset` | k = 0.5, 1, 2, 3, 5 | 1 h, 6 h, 24 h, 72 h | k = 0.75, 1.5, 4 | 12 h, 48 h, 120 h |
+| `noise` | k = 0.5, 1, 2, 3, 5 | 1 h, 6 h, 24 h, 72 h | k = 0.75, 1.5, 4 | 12 h, 48 h, 120 h |
+| `drift` | k = 1, 2, 3, 5 | ramp = window = 24 h, 72 h, 168 h | k = 1.5, 4 | 120 h, 240 h |
+| `spike` | k = 2, 4, 8 ; n = 1, 3, 6 | 24 h | k = 3, 6 ; n = 2, 4 | 48 h |
+| `flatline` | w = 1 h, 3 h, 6 h | window = w | w = 2 h, 4 h | window = w |
+| `stuck` | — | 1 h, 6 h, 24 h, 72 h | — | 12 h, 48 h |
+| `multi_offset` | k = 2 ; n = 2, 3, 5, 8 | 24 h | k = 3 ; n = 4, 6 | 48 h |
+| `gain` | — | — | g = 0.5, 1.5, 2 | 24 h, 72 h |
+| `intermittent_offset` | — | — | k = 1.5, 3 | 48 h, 120 h |
+| `rain_scale` | f = 0.5, 1.5, 2, 3 | 6 h, 24 h | f = 0.75, 2.5 | 12 h |
+| `rain_suppress` | — | 6 h, 24 h | — | 12 h |
+| `rain_inject` | total_mm = 2, 5, 10, 20 ; duration_steps = 1 h, 3 h (= window) | — | total_mm = 7, 15 ; duration_steps = 2 h | — |
+
+`spike` and `multi_offset` use a single fixed window; `flatline`, `drift` and `rain_inject` derive their window from the swept size/ramp/duration parameter, so they have no separate duration list. Durations in hours are converted to 5-min steps (×12) by `expand`.
 
 Placement rules: window eligible only if ≤ 5 % of target points are gap-filled; precipitation only months 4–10;
 `rain_scale`/`rain_suppress` windows must contain ≥ 2 mm (≥ 5 mm for suppress) at the target; two scenarios on
