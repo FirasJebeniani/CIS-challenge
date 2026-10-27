@@ -69,6 +69,9 @@ def build_adaptive_suite(base_scenarios, clean, sigma, detect, *, grid, grace: s
     """
     scenarios = []
     for base in base_scenarios:
+        if base.family not in SIZE_KEY:  # no size to sweep (flatline, stuck, rain_suppress)
+            scenarios.append(base.model_copy(update={"split": pool}))
+            continue
         esc = escape_magnitude(base, clean, sigma, detect, grid=grid, grace=grace)
         size = esc if not math.isnan(esc) else float(min(grid))
         scenarios.append(_variant(base, size).model_copy(update={"split": pool}))

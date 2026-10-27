@@ -48,11 +48,10 @@ def main() -> None:
     sigma.index = sigma.index.astype(str)
     bases = list(load_suite(args.bases).scenarios)
 
-    table = escape_table(bases, clean, sigma, detect, grid=DEFAULT_GRID, grace=args.grace)
-    suite = build_adaptive_suite(bases, clean, sigma, detect, grid=DEFAULT_GRID, grace=args.grace)
-
     args.out.mkdir(parents=True, exist_ok=True)
-    table.to_parquet(args.out / "escape.parquet")
+    table = escape_table(bases, clean, sigma, detect, grid=DEFAULT_GRID, grace=args.grace)
+    table.to_parquet(args.out / "escape.parquet")  # saved before the suite, so a slow run is not lost
+    suite = build_adaptive_suite(bases, clean, sigma, detect, grid=DEFAULT_GRID, grace=args.grace)
     dump_suite(suite, args.out / "adaptive_probe.yaml")
     print(table.to_string(index=False))
     print(f"\nwrote {args.out/'escape.parquet'} and {args.out/'adaptive_probe.yaml'}")

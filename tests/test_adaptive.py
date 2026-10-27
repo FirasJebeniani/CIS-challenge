@@ -66,6 +66,15 @@ def test_adaptive_suite_has_one_scenario_per_base_family():
     assert {s.family for s in suite.scenarios} == {"offset", "noise"}
 
 
+def test_adaptive_suite_handles_sizeless_family():
+    # flatline has no size parameter to sweep; the suite keeps it rather than crashing
+    flat = offset_scenario(1.0).model_copy(
+        update={"family": "flatline", "id": "probe-flatline-ai-0002", "params": {"w_steps": 36.0}}
+    )
+    suite = build_adaptive_suite([flat], clean(), SIGMA, threshold_detector(2.0), grid=[1.0, 2.0])
+    assert [s.family for s in suite.scenarios] == ["flatline"]
+
+
 def test_adaptive_suite_is_deterministic():
     bases = [offset_scenario(1.0)]
     a = build_adaptive_suite(bases, clean(), SIGMA, threshold_detector(2.0), grid=[1.0, 2.0, 3.0])
