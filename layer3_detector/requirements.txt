@@ -1,0 +1,16 @@
+# Python 3.12, CPU only. numpy and scikit-learn versions are checked when a saved model is loaded.
+numpy==2.5.4
+pandas==3.1.0
+scikit-learn==1.9.1
+scipy==1.18.1
+threadpoolctl==3.7.0
+joblib==1.6.0
+xarray==2026.9.0
+h5netcdf==1.8.1
+h5py==3.16.0
+pyarrow==26.0.0
+pyyaml==6.0.3
+matplotlib==3.11.2
+# tests and notebook
+pytest==9.1.1
+ipykernel==7.4.0
