@@ -13,7 +13,7 @@ dynamic = ["dependencies"]
 dependencies = {file = ["requirements.in"]}
 
 [tool.setuptools.packages.find]
-include = ["core*", "adapters*", "attacks*", "eval*"]
+include = ["core*", "adapters*", "attacks*", "eval*", "data_prep*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

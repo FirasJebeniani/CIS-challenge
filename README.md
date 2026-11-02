@@ -4,6 +4,14 @@ Layer 4 (`core/response/`) combines Layer 1 verdicts and Layer 3 detector output
 actions and released values per sensor, with a hash-chained audit log and a FastAPI HTML/CSS dashboard. See
 [Layer 4](docs/layer4.md) and the [threshold rationale](docs/layer4-thresholds.md).
 
+# Attack scenarios and evaluation suite
+
+Merged from the `attack-scenarios` branch: labelled false-data scenarios on real WegenerNet station data
+(`attacks/`, `data_prep/`), scoring, baselines, escape-magnitude evaluation and report figures (`eval/`).
+See the [evaluation suite how-to](docs/evaluation-suite.md), the plain-language [GUIDE.md](GUIDE.md),
+the [attack catalogue](docs/attack_catalogue.md), the [evaluation protocol](docs/evaluation_protocol.md)
+and the [results](docs/results.md).
+
 # Half-hourly 2023–2024 workflow
 
 See [PowerShell commands](docs/windows-half-hourly.md), [feature definitions](docs/half-hourly-integration.md), and [Layer 3 handoff](docs/layer3-half-hourly-handoff.md). Only supplied half-hourly January 2023 can be executed here; other months are not claimed validated.
