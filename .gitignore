@@ -50,7 +50,6 @@ reports/*
 /results/
 /logs/
 /runs/
-/artifacts/
 /datasets/
 
 # Speed Fix backup (keep optimized source code)
@@ -78,3 +77,6 @@ reports/*
 # From attack-scenarios
 alarms/
 .ruff_cache/
+
+# The trained Layer 3 model is shipped in artifacts/ (data/ stays out of git)
+!/artifacts/calibration.npz
