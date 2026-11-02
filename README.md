@@ -1,3 +1,9 @@
+# Layer 4 trust and response
+
+Layer 4 (`core/response/`) combines Layer 1 verdicts and Layer 3 detector output into a trust state,
+actions and released values per sensor, with a hash-chained audit log and a FastAPI HTML/CSS dashboard. See
+[Layer 4](docs/layer4.md) and the [threshold rationale](docs/layer4-thresholds.md).
+
 # Half-hourly 2023–2024 workflow
 
 See [PowerShell commands](docs/windows-half-hourly.md), [feature definitions](docs/half-hourly-integration.md), and [Layer 3 handoff](docs/layer3-half-hourly-handoff.md). Only supplied half-hourly January 2023 can be executed here; other months are not claimed validated.
