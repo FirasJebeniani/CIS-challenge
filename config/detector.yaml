@@ -2,7 +2,7 @@
 
 # --- 1. Data: WegenerNet gridded NetCDF -> compact cache of virtual streams -----------------------
 data:
-  source_glob: WN_L2_HHD_v8_2025_1_UTM_TF1_UTC_20*/*.nc
+  source_glob: data/WN_L2_HHD_v8_2025_1_UTM_TF1_UTC_20*/*.nc
   cache: data/cache
   stride: 15                       # every 15th grid cell (1.5 km spacing)
   margin: 8

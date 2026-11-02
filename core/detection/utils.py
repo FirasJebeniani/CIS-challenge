@@ -63,3 +63,17 @@ def versions():
     """Python/platform and key library versions, stored with every saved model."""
     return {"python": platform.python_version(), "platform": platform.platform(), **{
         p: importlib.metadata.version(p) for p in ("numpy", "pandas", "scikit-learn", "scipy")}}
+
+
+def legacy_module_aliases():
+    """Let artifacts pickled by the original ``layer3_detector`` package (module ``detector``) load.
+
+    Pickles store the defining module's name; this package was renamed ``detector`` -> ``core.detection``.
+    Only use for trusted local artifacts: their SHA-256 hashes are checked before loading.
+    """
+    import importlib
+    import sys
+    package = importlib.import_module("core.detection")
+    sys.modules.setdefault("detector", package)
+    for name in ("utils", "data", "attacks", "features", "model", "metrics"):
+        sys.modules.setdefault(f"detector.{name}", importlib.import_module(f"core.detection.{name}"))

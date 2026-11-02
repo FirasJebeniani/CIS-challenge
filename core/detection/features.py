@@ -19,7 +19,7 @@ import pandas as pd
 from scipy.spatial.distance import cdist
 
 from core.detection.data import episodes
-from core.detection.utils import read_json, sha256, versions, write_json
+from core.detection.utils import legacy_module_aliases, read_json, sha256, versions, write_json
 
 FEATURE_NAMES = (
     "z_forecast", "z_anchor", "z_spatial_near", "z_spatial_wider",
@@ -438,4 +438,5 @@ class FeatureExtractor:
         current = versions()
         if any(manifest["versions"][p] != current[p] for p in ("numpy", "scikit-learn")):
             raise ValueError("Library versions differ from the saved extractor; use requirements.txt")
+        legacy_module_aliases()
         return joblib.load(path)
