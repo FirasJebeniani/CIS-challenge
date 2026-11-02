@@ -34,18 +34,22 @@ stream every 2.5 months). Against a transparent rule ensemble built from the sam
 
 ## 1. Quick start
 
+From the repository root:
+
 ```bash
-python3.12 -m venv .venv
-.venv/bin/python -m pip install -r requirements.txt
-.venv/bin/python -m pytest -q                       # 19 tests, no data needed
+python3 -m venv .venv
+.venv/bin/python -m pip install --require-hashes -r requirements.txt
+.venv/bin/python -m pip install -r requirements-detector.txt
+.venv/bin/python -m pytest -q core/tests/test_detector.py   # 19 tests, no data needed
 ```
 
-Place the WegenerNet NetCDF folders `WN_L2_HHD_v8_2025_1_UTM_TF1_UTC_2023/` and `…_2024/` in this folder, then:
+Unzip the WegenerNet NetCDF archives into `data/` so that `data/WN_L2_HHD_v8_2025_1_UTM_TF1_UTC_2023/` and
+`…_2024/` hold the monthly `.nc` files, then:
 
 ```bash
-.venv/bin/python -m detector.pipeline               # full pipeline
-.venv/bin/python -m detector.pipeline --stage evaluate    # one step (stages: extract, features, train, calibrate, select, evaluate)
-.venv/bin/python -m detector.pipeline --force       # rebuild everything
+.venv/bin/python -m core.detection.pipeline               # full pipeline
+.venv/bin/python -m core.detection.pipeline --stage evaluate    # one step (stages: extract, features, train, calibrate, select, evaluate)
+.venv/bin/python -m core.detection.pipeline --force       # rebuild everything
 ```
 
 [`detector_walkthrough.ipynb`](detector_walkthrough.ipynb) runs the same steps one by one, with an explanation
@@ -85,8 +89,8 @@ reading ──► │  TEMPORAL        SPATIAL            PHYSICAL RULES       C
 
 ## 3. The detector, component by component
 
-All settings live in [`config.yaml`](config.yaml). Every feature at time *t* uses only values up to *t*, so the
-detector can run live; [`tests/`](tests/test_detector.py) checks that changing future values never changes earlier
+All settings live in [`config/detector.yaml`](../../config/detector.yaml). Every feature at time *t* uses only values up to *t*, so the
+detector can run live; [`core/tests/`](../tests/test_detector.py) checks that changing future values never changes earlier
 features. Rain is modelled as `log(1 + mm)` so heavy showers do not dominate. All scales are **robust** (median and
 1.4826 × MAD), learned per site and variable on clean training data.
 
@@ -174,7 +178,7 @@ readings scored**. The chosen rule is then frozen together with the SHA-256 hash
 | Relative humidity | two-of-three | 0.001 | 82.6 % | 50.4 % | 0.626 | 0.0110 |
 | Rain | direct | 0.0003 | 100 % | 24.6 % | 0.395 | 0.0000 |
 
-*Selection period Nov–Dec 2023; full search in [`results/threshold_search_2023.csv`](results/threshold_search_2023.csv).*
+*Selection period Nov–Dec 2023; full search in [`results/threshold_search_2023.csv`](../results/threshold_search_2023.csv).*
 
 ---
 
@@ -197,7 +201,7 @@ evaluation year.
 
 Replays use 14-day episodes; the first 24 h of each are warm-up and never alert.
 
-**12 synthetic attack families**, generated reproducibly by [`detector/attacks.py`](detector/attacks.py) and
+**12 synthetic attack families**, generated reproducibly by [`detector/attacks.py`](../detection/attacks.py) and
 injected *before* feature extraction (the detector only sees the manipulated values). Labels mark only readings
 whose value actually changed.
 
@@ -216,7 +220,7 @@ how well the detector generalises to unseen attack types. Attack windows last 6,
 seeds place attacks at different sites and times.
 
 More detail (threat model, quality flags, metric definitions):
-[`docs/data_and_threat_model.md`](docs/data_and_threat_model.md).
+[`core/docs/data_and_threat_model.md`](data_and_threat_model.md).
 
 ---
 
@@ -240,7 +244,7 @@ variable (seed 91000): temperature precision 46.9 % / recall 24.2 %; humidity 71
 The **rule ensemble** fuses the temporal, spatial and physics scores and an Isolation Forest with a
 Bonferroni-corrected minimum p-value. It is the natural non-learned alternative, evaluated on the same 2024 data.
 
-![Detector vs rule ensemble](docs/figures/detector_vs_rule_ensemble.png)
+![Detector vs rule ensemble](figures/detector_vs_rule_ensemble.png)
 
 | 2024 | Rule ensemble | This detector | Change |
 |---|---:|---:|---:|
@@ -250,11 +254,11 @@ Bonferroni-corrected minimum p-value. It is the natural non-learned alternative,
 | Attacks detected | 50.6 % / 54.5 % | 79.2 % / 82.2 % | +29 points |
 | False-alert episodes / stream-day | 0.0461 | 0.0132 | 3.5× fewer |
 
-*Source: [`results/detector_vs_rule_ensemble_2024.csv`](results/detector_vs_rule_ensemble_2024.csv).*
+*Source: [`results/detector_vs_rule_ensemble_2024.csv`](../results/detector_vs_rule_ensemble_2024.csv).*
 
 ### 5.3 Per attack family
 
-![Recall per attack family](docs/figures/family_recall.png)
+![Recall per attack family](figures/family_recall.png)
 
 - **Caught almost always:** invalid range (98 % of readings, 100 % of attacks) and freeze (96 % / 100 %), through
   the physical rules.
@@ -281,7 +285,7 @@ reading per stream every 30 minutes). Each run records its timing in `outputs/me
 | Choice | Justification | Evidence |
 |---|---|---|
 | **Learned classifier on top of the rule signals** | Each rule sees one aspect. The classifier learns how they combine, e.g. "deviates from the past *but* neighbours moved too" is weather, not an attack. | F1 0.22 → 0.41, false alarms 3.5× lower than the rule ensemble on the same signals (§ 5.2) |
-| **Extra Trees rather than other models** | Strongest of 11 candidates under the same false-alarm budget. Fast on CPU, robust to irrelevant features, handles missing inputs, and its randomised splits limit over-fitting to synthetic attacks. | Figure below; [`results/model_comparison_2023.csv`](results/model_comparison_2023.csv) |
+| **Extra Trees rather than other models** | Strongest of 11 candidates under the same false-alarm budget. Fast on CPU, robust to irrelevant features, handles missing inputs, and its randomised splits limit over-fitting to synthetic attacks. | Figure below; [`results/model_comparison_2023.csv`](../results/model_comparison_2023.csv) |
 | **Temporal + spatial + physical features together** | They catch different attacks: rules catch range and freeze, temporal signals catch drift and spikes, spatial signals catch offsets invisible in a single series. | Per-family recall (§ 5.3) |
 | **Two disjoint neighbour rings, weights capped at 45 %** | A coordinated attack on nearby sites can fool the near ring; the wider ring is an independent check. The cap stops one neighbour (possibly attacked) from dominating the reference. | Patch attacks: 73 % detected as events, although they corrupt the near neighbours |
 | **CUSUM on the seasonal residual** | Slow drifts never produce a single large step; accumulating small deviations exposes them. | Drift: 78 % of attacks detected |
@@ -289,13 +293,13 @@ reading per stream every 30 minutes). Each run records its timing in `outputs/me
 | **Hard clean examples in training** | Teaches the model that real local weather (large but genuine neighbour differences) is *not* an attack, which is where neighbour-based detectors produce most false alarms. | Part of the training design behind the 0.013 false-alarm rate (not separately ablated) |
 | **Three attack families withheld from training** | Tests generalisation to attack types the model has never seen, which is the realistic situation. | Mimicry 89 %, pattern 85 %, multivariate 89 % of attacks detected |
 | **Calibration on separate clean data** | Turns arbitrary scores into comparable tail values, so one false-alarm budget applies to all variables, and the budget is set on data the model was not trained on. | Measured 2024 false-alarm rate (0.013) stays within the 0.05 budget |
-| **Per-variable alert rules** | The variables behave differently: rain is rarely attacked-and-observable, humidity is noisy. One shared threshold over-alerts on rain. | Rain precision 8.6 % → 25.2 % (seed 91000), spike recall 15 % → 23 %, overall F1 unchanged (0.402 → 0.408); [`results/ablation_alert_rule_2024.csv`](results/ablation_alert_rule_2024.csv) |
+| **Per-variable alert rules** | The variables behave differently: rain is rarely attacked-and-observable, humidity is noisy. One shared threshold over-alerts on rain. | Rain precision 8.6 % → 25.2 % (seed 91000), spike recall 15 % → 23 %, overall F1 unchanged (0.402 → 0.408); [`results/ablation_alert_rule_2024.csv`](../results/ablation_alert_rule_2024.csv) |
 | **Two-of-three confirmation for humidity** | Humidity fluctuates more; requiring a second exceedance within an hour removes isolated false alarms. | Chosen by the selection criterion (§ 3.6) |
 | **False-alarm budget 0.05 episodes / stream-day** | An operator sees at most one false episode per stream every 20 days; the measured rate is ~4× lower. | § 5.1 |
 | **Strict chronological splits, frozen with hashes** | No information from the evaluation year leaks into training, calibration or threshold choice; the frozen files cannot change silently. | `Detector` and `evaluate` verify SHA-256 hashes before scoring |
 | **Strict point metrics, no point-adjustment** | Point-adjusted scores overstate performance (one hit would count a whole attack as caught). Reporting both readings and events shows the true picture. | § 5 |
 
-![Model comparison](docs/figures/model_comparison.png)
+![Model comparison](figures/model_comparison.png)
 
 *Candidates compared on Nov–Dec 2023 under the same budget. The gradient-boosting models came close. The neural
 models (GRU and TCN forecasters, a sequence autoencoder) are trained only on clean data and react to anything
@@ -307,8 +311,8 @@ attacks from rare weather.*
 ## 7. Using the detector
 
 ```python
-from detector.model import Detector
-from detector.data import load_partition, episodes
+from core.detection.model import Detector
+from core.detection.data import load_partition, episodes
 
 _, episode = next(episodes(load_partition("validation")))   # values [time, 162 sites, 3 variables], 30-min UTC
 p, alerts = Detector()(episode)                             # p-values and boolean alerts, same shape
@@ -322,30 +326,33 @@ episode are warm-up.
 
 ## 8. Project structure
 
+The detector lives inside the main repository (paths from the repository root):
+
 ```
-├── README.md
-├── config.yaml                  all settings (data, features, attacks, model, alert rule, evaluation)
-├── detector/
-│   ├── data.py                  NetCDF → cache, chronological splits, 14-day episodes
-│   ├── attacks.py               the 12 seeded attack families and their labels
-│   ├── features.py              temporal, spatial and physical-rule features (37 per reading)
-│   ├── model.py                 Extra Trees, calibration, alert rule, Detector (inference)
-│   ├── metrics.py               point / event metrics, false-alert episodes
-│   ├── pipeline.py              python -m detector.pipeline
+├── config/detector.yaml             all settings (data, features, attacks, model, alert rule, evaluation)
+├── core/detection/
+│   ├── data.py                      NetCDF → cache, chronological splits, 14-day episodes
+│   ├── attacks.py                   the 12 seeded attack families and their labels
+│   ├── features.py                  temporal, spatial and physical-rule features (37 per reading)
+│   ├── model.py                     Extra Trees, calibration, alert rule, Detector (inference)
+│   ├── metrics.py                   point / event metrics, false-alert episodes
+│   ├── adapter.py                   Layer 2 FeatureWindows / compact CSV → detector input
+│   ├── pipeline.py                  python -m core.detection.pipeline
 │   └── utils.py
-├── detector_walkthrough.ipynb   the pipeline step by step, with explanations
-├── tests/test_detector.py       causality, leakage, missing data, attacks, calibration, metrics
-├── results/                     the result tables cited in this README
-├── docs/
-│   ├── data_and_threat_model.md dataset, threat model, attack families, metric definitions
+├── core/tests/test_detector.py      causality, leakage, missing data, attacks, calibration, metrics
+├── core/results/                    the result tables cited in this README
+├── core/docs/
+│   ├── README.md                    this file
+│   ├── detector_walkthrough.ipynb   the pipeline step by step, with explanations
+│   ├── data_and_threat_model.md     dataset, threat model, attack families, metric definitions
 │   ├── layer3_specification.docx
-│   └── figures/                 README figures (make_figures.py regenerates them from results/)
-├── requirements.txt
-└── pyproject.toml
+│   └── figures/                     README figures (make_figures.py regenerates them from core/results/)
+└── requirements-detector.txt        detector dependencies (on top of requirements.txt)
 ```
 
-A run creates three git-ignored folders: `data/cache/` (extracted data), `artifacts/` (feature extractor, models,
-calibration, frozen `policy.json`) and `outputs/` (metrics, per-variable and per-family tables, `RESULTS.md`).
+The trained model is shipped in `artifacts/` at the repository root (feature extractor, models, calibration,
+frozen `policy.json`); `--force` retrains it. A run creates two git-ignored folders: `data/cache/` (extracted
+data) and `outputs/` (metrics, per-variable and per-family tables, `RESULTS.md`).
 
 ---
 

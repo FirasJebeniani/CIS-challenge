@@ -1,9 +1,13 @@
-"""Regenerate the README figures from results/ (run from the project root: python docs/figures/make_figures.py)."""
+"""Regenerate the detector README figures from core/results/ (python core/docs/figures/make_figures.py)."""
 import json
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd
+from pathlib import Path
+
+FIGURES = Path(__file__).resolve().parent
+RESULTS = FIGURES.parents[1] / "results"   # core/results
 
 BLUE, ORANGE, GREY = "#2a78d6", "#eb6834", "#b4b2a9"
 INK, INK2, SURFACE, GRID = "#0b0b0b", "#52514e", "#fcfcfb", "#e6e5e0"
@@ -16,7 +20,7 @@ def clean(ax, axis="x"):
         ax.spines[s].set_visible(False)
 
 # 1. Model comparison (F1 on Nov-Dec 2023, same false-alert budget)
-mc = pd.read_csv("results/model_comparison_2023.csv").sort_values("f1")
+mc = pd.read_csv(RESULTS / "model_comparison_2023.csv").sort_values("f1")
 labels = {"extra_trees": "Extra Trees (selected)", "boost_deep": "Gradient boosting (large)", "boost_small": "Gradient boosting (small)",
           "spatial": "Spatial consistency score", "rule_ensemble": "Rule ensemble (4 families)", "spatial_local": "Spatial score, drift-corrected",
           "gru_forecast": "GRU forecaster", "tcn_forecast": "TCN forecaster", "sequence_autoencoder": "Sequence autoencoder",
@@ -28,10 +32,10 @@ for y, v in enumerate(mc.f1):
     ax.text(v + .008, y, f"{v:.3f}", va="center", fontsize=9, color=INK)
 ax.set_xlim(0, .7); ax.set_xlabel("F1 on Nov–Dec 2023 (≤ 0.05 false-alert episodes / stream-day, ≥ 95 % coverage)")
 ax.set_title("Candidate detectors under the same false-alarm budget", loc="left", fontsize=11, color=INK)
-clean(ax); fig.tight_layout(); fig.savefig("docs/figures/model_comparison.png", dpi=160); plt.close(fig)
+clean(ax); fig.tight_layout(); fig.savefig(FIGURES / "model_comparison.png", dpi=160); plt.close(fig)
 
 # 2. Detector vs rule ensemble, 2024 (seed 91000): rates in one panel, false alarms in its own panel (one axis each)
-cmp = pd.read_csv("results/detector_vs_rule_ensemble_2024.csv").query("suite == 'seed_91000'")
+cmp = pd.read_csv(RESULTS / "detector_vs_rule_ensemble_2024.csv").query("suite == 'seed_91000'")
 rule, ours = cmp.iloc[0], cmp.iloc[1]
 metrics = [("precision", "Precision"), ("recall", "Recall"), ("f1", "F1"), ("event_recall", "Events detected")]
 fig, (a, b) = plt.subplots(1, 2, figsize=(9, 3.6), gridspec_kw={"width_ratios": [3, 1.2]})
@@ -48,10 +52,10 @@ b.bar(["Rule\nensemble", "This\ndetector"], fa, color=[GREY, BLUE], width=.55, e
 for i, v in enumerate(fa):
     b.text(i, v + .001, f"{v:.4f}", ha="center", fontsize=8, color=INK)
 b.set_title("False-alert episodes\nper stream-day (lower is better)", loc="left", fontsize=10); b.set_ylim(0, .055); clean(b, "y")
-fig.tight_layout(); fig.savefig("docs/figures/detector_vs_rule_ensemble.png", dpi=160); plt.close(fig)
+fig.tight_layout(); fig.savefig(FIGURES / "detector_vs_rule_ensemble.png", dpi=160); plt.close(fig)
 
 # 3. Recall per attack family, 2024 seed 91000
-fam = pd.read_csv("results/families_2024.csv").query("suite == 'seed_91000'").sort_values("point_recall")
+fam = pd.read_csv(RESULTS / "families_2024.csv").query("suite == 'seed_91000'").sort_values("point_recall")
 withheld = {"pattern", "mimicry", "multivariate"}
 names = [f"{f}  (withheld)" if f in withheld else f for f in fam.family]
 fig, ax = plt.subplots(figsize=(7.6, 4.6))
@@ -60,5 +64,5 @@ ax.barh([i + h/2 for i in y], fam.event_recall, h, color=ORANGE, label="Events d
 ax.barh([i - h/2 for i in y], fam.point_recall, h, color=BLUE, label="Attacked points flagged", edgecolor=SURFACE, linewidth=2)
 ax.set_yticks(list(y), names); ax.set_xlim(0, 1); ax.set_xticks([0, .25, .5, .75, 1], ["0", "25 %", "50 %", "75 %", "100 %"])
 ax.legend(frameon=False, loc="upper center", bbox_to_anchor=(0.4, -0.08), ncol=2); ax.set_title("Recall per attack family (2024, seed 91000)", loc="left", fontsize=11)
-clean(ax); fig.tight_layout(); fig.savefig("docs/figures/family_recall.png", dpi=160); plt.close(fig)
-print("Figures written to docs/figures/")
+clean(ax); fig.tight_layout(); fig.savefig(FIGURES / "family_recall.png", dpi=160); plt.close(fig)
+print(f"Figures written to {FIGURES}")
