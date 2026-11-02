@@ -1,3 +1,24 @@
+# CIS Challenge — false-data detection for weather sensors
+
+## Start here
+
+| You want to… | Read |
+|---|---|
+| **Test the model** (install, reproduce the results, plant your own attack, read the outputs) | [docs/jury-guide.md](docs/jury-guide.md) |
+| Know what every folder is for | [docs/project-structure.md](docs/project-structure.md) |
+| Understand the detector (Layer 3) | [core/docs/README.md](core/docs/README.md) |
+| Understand trust, response and the dashboard (Layer 4) | [docs/layer4.md](docs/layer4.md) |
+| Run the attack-scenario suite on station data | [docs/evaluation-suite.md](docs/evaluation-suite.md) |
+
+Quick check after installing (see the jury guide): `python -m pytest -q tests core/tests` → 745 passed, 17 skipped.
+
+# Layer 3 detector
+
+The false-data-injection detector (`core/detection/`) is documented in [core/docs/README.md](core/docs/README.md),
+with a step-by-step [walkthrough notebook](core/docs/detector_walkthrough.ipynb). Install its dependencies with
+`pip install -r requirements-detector.txt`, run it with `python -m core.detection.pipeline`, and try an attack with
+`python -m scripts.try_detector`.
+
 # Layer 4 trust and response
 
 Layer 4 (`core/response/`) combines Layer 1 verdicts and Layer 3 detector output into a trust state,
