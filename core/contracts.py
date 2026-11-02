@@ -253,3 +253,74 @@ class FeatureWindow(Contract):
             if reference.observed_at >= self.end or reference.available_at > self.as_of:
                 raise ValueError("reference exceeds the event-time or availability cutoff")
         return self
+
+
+# ---------------------------------------------------------------- Layer 4 (trust and response)
+
+TrustState = Literal["trusted", "suspicious", "quarantined"]
+Probability = Annotated[FiniteNumber, Field(ge=0, le=1)]
+
+
+class VariableEvidence(Contract):
+    """One variable of one sensor at one tick: the L1 verdict, the L3 score, and what L4 released.
+
+    ``raw_value`` is always kept (source units). ``release`` says what downstream consumers get:
+    the raw value, a neighbour-median substitute, or nothing.
+    """
+
+    variable: Identifier
+    quantity: Identifier
+    provenance_status: Identifier          # an L1 status, "missing" (no reading) or "ambiguous"
+    event_id: Annotated[StrictInt, Field(ge=0)] | None = None   # L1 durable event ID of the reading
+    raw_value: FiniteNumber | None = None
+    unit: Unit | None = None
+    p_value: Probability | None = None     # L3 calibrated tail value; None = not scored
+    alpha: Probability | None = None       # frozen L3 alert threshold for this variable
+    alert: StrictBool = False              # L3 alert (after its confirmation rule)
+    anomaly: Probability | None = None     # L4 mapping of (p_value, alert) to [0, 1]
+    released_value: FiniteNumber | None = None
+    release: Literal["raw", "imputed", "withheld"]
+    imputation_neighbors: Annotated[StrictInt, Field(ge=0)] = 0
+
+    @model_validator(mode="after")
+    def consistent_release(self) -> Self:
+        if (self.release == "withheld") != (self.released_value is None):
+            raise ValueError("withheld values carry no released value, and vice versa")
+        if self.release == "raw" and self.released_value != self.raw_value:
+            raise ValueError("a raw release must equal the raw value")
+        return self
+
+
+class TrustDecision(Contract):
+    """L4 output per sensor per tick.
+
+    ``category`` separates the two cases the architecture requires reporting separately:
+    ``provenance_failure`` (L1 rejected a reading: overrides everything) and
+    ``authentic_but_suspicious`` (valid signature, L3 alert: physical spoofing / compromised node).
+    """
+
+    schema_version: Literal["1.0"] = "1.0"
+    sensor_id: Identifier
+    ts: UtcDatetime
+    window_id: Identifier | None = None
+    trust_score: Probability
+    state: TrustState
+    previous_state: TrustState
+    category: Literal["nominal", "unscored", "authentic_but_suspicious", "provenance_failure"]
+    cause: Literal["provenance", "anomaly"] | None = None   # why the sensor is not trusted
+    actions: tuple[Literal["flag", "quarantine", "impute", "notify"], ...] = ()
+    alert_count_short: Annotated[StrictInt, Field(ge=0)] = 0     # alerted ticks in the short window
+    alert_count_long: Annotated[StrictInt, Field(ge=0)] = 0      # alerted ticks in the long window
+    provenance_failures_recent: Annotated[StrictInt, Field(ge=0)] = 0
+    explanation: Annotated[StrictStr, Field(min_length=1, max_length=2000)]
+    evidence: tuple[VariableEvidence, ...] = Field(default=(), max_length=16)
+
+    @model_validator(mode="after")
+    def consistent_decision(self) -> Self:
+        if len(set(self.actions)) != len(self.actions):
+            raise ValueError("duplicate actions")
+        if self.state == "trusted" and self.cause is not None:
+            raise ValueError("a trusted sensor has no distrust cause")
+        if self.state != "trusted" and self.cause is None:
+            raise ValueError("a non-trusted state requires a cause")
+        return self
