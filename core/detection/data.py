@@ -4,7 +4,7 @@
 ("virtual streams") with temperature (degC), relative humidity (%) and rain (mm/30 min) plus
 their quality flags. ``load_partition`` reads one chronological split (train / calibration /
 validation / test), verifying every hash. ``episodes`` cuts a partition into fixed 14-day
-replay episodes. Configuration: the ``data`` section of ``config.yaml``.
+replay episodes. Configuration: the ``data`` section of ``config/detector.yaml``.
 """
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from detector.utils import ROOT, VARIABLES, config, sha256, write_json
+from core.detection.utils import ROOT, VARIABLES, config, sha256, write_json
 
 
 @dataclass

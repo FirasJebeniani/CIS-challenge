@@ -1,8 +1,8 @@
 """End-to-end pipeline of the Layer 3 detector (CPU only).
 
-    python -m detector.pipeline                # run every missing stage
-    python -m detector.pipeline --stage select # run one stage
-    python -m detector.pipeline --force        # rebuild everything
+    python -m core.detection.pipeline                # run every missing stage
+    python -m core.detection.pipeline --stage select # run one stage
+    python -m core.detection.pipeline --force        # rebuild everything
 
 Stages and their outputs (``artifacts/`` and ``outputs/`` are git-ignored):
 
@@ -25,13 +25,13 @@ import joblib
 import numpy as np
 import pandas as pd
 
-from detector.attacks import scenarios
-from detector.data import episodes, extract, load_partition
-from detector.features import FeatureExtractor
-from detector.metrics import aggregate_counts, event_metrics, point_counts, summarize_counts
-from detector.model import (Detector, alert_code, alerts, calibration_tails, p_values, score, train,
+from core.detection.attacks import scenarios
+from core.detection.data import episodes, extract, load_partition
+from core.detection.features import FeatureExtractor
+from core.detection.metrics import aggregate_counts, event_metrics, point_counts, summarize_counts
+from core.detection.model import (Detector, alert_code, alerts, calibration_tails, p_values, score, train,
                             training_rows)
-from detector.utils import ARTIFACTS, OUTPUTS, ROOT, VARIABLES, config, read_json, sha256, write_json
+from core.detection.utils import ARTIFACTS, OUTPUTS, ROOT, VARIABLES, config, read_json, sha256, write_json
 
 EXTRACTOR = ARTIFACTS / "feature_extractor.joblib"
 MODELS = ARTIFACTS / "extra_trees.joblib"

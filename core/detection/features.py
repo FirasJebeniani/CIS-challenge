@@ -18,8 +18,8 @@ import numpy as np
 import pandas as pd
 from scipy.spatial.distance import cdist
 
-from detector.data import episodes
-from detector.utils import read_json, sha256, versions, write_json
+from core.detection.data import episodes
+from core.detection.utils import read_json, sha256, versions, write_json
 
 FEATURE_NAMES = (
     "z_forecast", "z_anchor", "z_spatial_near", "z_spatial_wider",
@@ -242,7 +242,7 @@ class FeatureExtractor:
     """Frozen, causal feature extractor fitted on nominal training data."""
 
     def __init__(self, cfg, sites):
-        """``cfg`` is the ``features`` section of config.yaml; ``sites`` has site_id/easting_m/northing_m."""
+        """``cfg`` is the ``features`` section of config/detector.yaml; ``sites`` has site_id/easting_m/northing_m."""
         if cfg["warmup_steps"] < 48 or cfg["episode_steps"] <= cfg["warmup_steps"]:
             raise ValueError("Features need at least 48 warm-up steps inside each episode")
         if cfg["min_neighbors"] < 3 or cfg["max_reference_weight"] < 1/cfg["min_neighbors"]:

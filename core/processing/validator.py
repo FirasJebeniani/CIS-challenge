@@ -55,6 +55,7 @@ def validate_reading(event: VerifiedReading) -> ProcessedReading:
     grid_units = {'T_zAvgTerr_HM':'K', 'T_zAvgTerr_HMin':'K',
                   'T_zAvgTerr_HMax':'K', 'RH_HM':'%', 'Precip_HS':'mm'}
     grid_units.update({k.replace('_HM','_HHM').replace('_HS','_HHS'):v for k,v in list(grid_units.items())})
+    grid_units['T_z300m_HHM'] = 'K'
     if raw.quantity in grid_units:
         expected = grid_units[raw.quantity]
         flags = []

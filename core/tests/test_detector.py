@@ -3,12 +3,12 @@ import numpy as np
 import pytest
 import xarray as xr
 
-import core.detector.data as data_module
-from core.detector.attacks import inject
-from core.detector.features import FeatureExtractor, calendar, capped_weights, history_complete, references, rolling, rule_scores, past_mean
-from core.detector.metrics import event_metrics, point_counts, summarize_counts
-from core.detector.model import alert_code, confirmed, p_values
-from core.detector.utils import config
+import core.detection.data as data_module
+from core.detection.attacks import inject
+from core.detection.features import FeatureExtractor, calendar, capped_weights, history_complete, references, rolling, rule_scores, past_mean
+from core.detection.metrics import event_metrics, point_counts, summarize_counts
+from core.detection.model import alert_code, confirmed, p_values
+from core.detection.utils import config
 
 
 # ---------------------------------------------------------------- data

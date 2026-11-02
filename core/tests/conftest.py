@@ -5,9 +5,9 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from core.detector.data import StreamData
-from core.detector.features import FeatureExtractor
-from core.detector.utils import config
+from core.detection.data import StreamData
+from core.detection.features import FeatureExtractor
+from core.detection.utils import config
 
 
 def synthetic(n=576, start="2023-01-01"):

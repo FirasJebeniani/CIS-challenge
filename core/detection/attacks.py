@@ -1,7 +1,7 @@
 """Synthetic false-data-injection attacks used to train, select and benchmark the detector.
 
 ``generate_scenarios`` draws a reproducible set of attacks for one episode (family, window,
-target sites, variable(s), amplitude) from the ``attacks`` section of ``config.yaml``.
+target sites, variable(s), amplitude) from the ``attacks`` section of ``config/detector.yaml``.
 ``inject`` applies them to a copy of the observations and returns the attacked values plus
 point-level ``changed`` labels. Only the evaluator sees labels; the detector only sees values.
 ``scenarios`` is the single entry point used by the pipeline.
@@ -13,7 +13,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from detector.utils import VARIABLES, config
+from core.detection.utils import VARIABLES, config
 
 
 @dataclass

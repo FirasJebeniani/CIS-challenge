@@ -2,5 +2,5 @@
 
 Modules, in pipeline order: ``data`` (cache, partitions, episodes), ``attacks`` (synthetic training
 attacks), ``features`` (causal feature extractor), ``model`` (Extra Trees, calibration, alert rule,
-``Detector``), ``metrics`` and ``pipeline`` (``python -m detector.pipeline``).
+``Detector``), ``metrics`` and ``pipeline`` (``python -m core.detection.pipeline``).
 """

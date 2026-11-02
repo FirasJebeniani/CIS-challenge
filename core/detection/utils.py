@@ -10,7 +10,7 @@ from pathlib import Path
 import numpy as np
 import yaml
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]   # repository root (core/detection/utils.py -> ../..)
 # Variable order of every [time, site, variable] array: 0 temperature, 1 humidity, 2 rain.
 VARIABLES = ("temperature_c", "relative_humidity_pct", "precip_mm_30min")
 UNITS = ("degC", "percent", "mm/30min")
@@ -19,7 +19,7 @@ OUTPUTS = ROOT / "outputs"       # results of a new run (git-ignored); reported 
 
 
 def config(section=None):
-    """Load ``config.yaml`` (or one of its sections)."""
+    """Load ``config/detector.yaml`` (or one of its sections)."""
     cfg = yaml.safe_load((ROOT / "config/detector.yaml").read_text())
     return cfg[section] if section else cfg
 

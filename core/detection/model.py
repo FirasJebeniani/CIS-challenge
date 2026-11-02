@@ -17,10 +17,10 @@ from sklearn.impute import SimpleImputer
 from sklearn.pipeline import make_pipeline
 from threadpoolctl import threadpool_limits
 
-from detector.attacks import scenarios
-from detector.data import episodes
-from detector.features import FeatureExtractor
-from detector.utils import ARTIFACTS, config, read_json, sha256
+from core.detection.attacks import scenarios
+from core.detection.data import episodes
+from core.detection.features import FeatureExtractor
+from core.detection.utils import ARTIFACTS, config, read_json, sha256
 
 
 def estimator(seed, threads):
@@ -42,7 +42,7 @@ def training_rows(extractor, data, log=print):
     for eid, episode in episodes(data):
         log(f"Training rows: episode {eid}")
         nominal = extractor.model_inputs(episode)
-        # Reserved draws (see config.yaml, model.reserved_rng_draws): they keep the random stream, and
+        # Reserved draws (see config/detector.yaml, model.reserved_rng_draws): they keep the random stream, and
         # therefore the sampled rows, identical to the run reported in results/.
         clean = nominal["quality"].all(axis=-1) & nominal["valid"].all(axis=-1)
         for split, quota in cfg["reserved_rng_draws"].items():
