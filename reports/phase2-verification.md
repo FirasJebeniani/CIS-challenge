@@ -74,6 +74,6 @@ Phase 2 ACL and broker results remain pending execution of
 `docs/windows-phase2.md`.
 
 Layer 1b runtime provenance verification, replay/registry policy, Layer 2 signal
-processing, actual L3/L4 integration, official dataset evaluation, detection
+processing, actual L3/L4 integration, dataset evaluation, detection
 metrics, automatic reconnect stability and benchmarks are later phases. No
 challenge detection result or performance claim is made by the 184 tests.

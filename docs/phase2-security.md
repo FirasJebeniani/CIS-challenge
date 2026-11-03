@@ -95,6 +95,5 @@ runtime reads the generated `local/manifest.json` and `local/mosquitto.conf`;
 editing the inactive design file does not reconfigure the live transport.
 
 No runtime Layer 1b verifier, replay classifier, registry policy, anomaly detector,
-Layer 2 normalization/features, L4 routing or benchmark is claimed here. Real
-datasets and official attack/evasion specifications remain pending. No official
-challenge detection score is inferred from these tests.
+Layer 2 normalization/features, L4 routing or benchmark is claimed here; those
+came in later phases. No challenge detection score is inferred from these tests.

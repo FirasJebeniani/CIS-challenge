@@ -65,4 +65,4 @@ User-reported Phase 5 result: **360 passed, 1 skipped in 57.40s**, with all brok
 
 ## Evaluation limits
 
-Metrics formulas were checked against explicitly labeled examples. No real detector performance was evaluated. Official data, the common attack/evasion scenario, held-out splits, actual Layer 3 predictions and full Layer 4 response integration remain pending. The real benchmark and stability runs concern Layers 1–2 and controlled local transport. Phase 7 has not started.
+Metrics formulas were checked against explicitly labeled examples. No real detector performance was evaluated. Real data, the standard attack/evasion scenario, held-out splits, actual Layer 3 predictions and full Layer 4 response integration remain pending. The real benchmark and stability runs concern Layers 1–2 and controlled local transport. Phase 7 has not started.

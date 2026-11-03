@@ -55,7 +55,7 @@ Native Windows ACLs and the Windows broker build need user-side verification.
 Default pytest runs skip 10 opt-in broker tests; Windows also skips the existing
 POSIX symlink test. Full Linux testing above enables all broker tests.
 
-Actual L3/L4 implementations, official datasets, the standard attack/evasion
+Actual L3/L4 implementations, dataset integration, the standard attack/evasion
 scenario, detector metrics, performance benchmarks, long-duration stability,
 automatic reconnection, hardware anti-rollback and operational journal retention
 remain pending. The durable callback seam is tested with synthetic consumers;

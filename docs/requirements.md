@@ -19,7 +19,7 @@ submission. "Evidence" points to the code, test or result that supports the clai
 | Goal | Status | Evidence |
 | --- | --- | --- |
 | Use authentic public data | Done | WegenerNet Level 2 v8.0 (DOI 10.25364/WEGC/WPS8.0-2025.1), gridded half-hourly and 5-minute stations |
-| Apply the common standard scenario | Partly | No official scenario file was published; the team defined a versioned, seeded scenario (`attacks/`, [evaluation_protocol.md](evaluation_protocol.md)). The trained detector is evaluated on its own chronological held-out protocol; grading it on the station suite needs a station-data retrain (Phase 2) |
+| Apply the common standard scenario | Partly | Versioned, seeded standard scenario on real WegenerNet data (`attacks/`, [evaluation_protocol.md](evaluation_protocol.md)). The trained detector is evaluated on its own chronological held-out protocol; grading it on the station suite needs a station-data retrain (Phase 2) |
 | Detect or prevent the attack | Done | Layer 1 prevents in-transit/stored tampering; Layer 3 detects valid-signature false data; Layer 4 withholds or imputes |
 | Report detection quality | Done | Precision, recall, F1, event detection, delay: [core/docs/README.md § 5](../core/docs/README.md#5-results) |
 | Report false alarms | Done | 0.013 false-alert episodes per stream-day on clean 2024 |

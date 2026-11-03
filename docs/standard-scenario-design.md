@@ -5,7 +5,7 @@ Date: 2026-10-27
 ## 1. Intent
 
 The team's prototype (L1 signatures → L2 features → L3 detectors → L4 trust) is judged on how well it catches
-false data. No official standard scenario was published, so this workstream **defines it**: a versioned,
+false data. This workstream builds the **standard scenario**: a versioned,
 seeded, reproducible set of labelled fault scenarios injected into real WegenerNet data, plus the scoring that
 turns detector output into the numbers the jury asks for (detection quality, false alarms, latency).
 

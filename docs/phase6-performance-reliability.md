@@ -153,5 +153,4 @@ not the test set. Define the evaluation unit (reading/window/incident) with Laye
 
 Metrics tests use small declared examples to check formulas; they are not challenge
 results. No detector predictions or labels are fabricated for a performance claim.
-Actual evaluation still needs real L3 output, approved datasets, held-out splits,
-and the official common attack/evasion specification. Phase 7 is not started.
+Detector evaluation on real data was done later (see `core/docs/README.md`).
