@@ -34,7 +34,7 @@ catches the fakes.
 
 ## How to test it
 
-All commands run from the project root (`/home/sah/Projects/TSYP`). The tool is `uv`.
+All commands run from the project root. The tool is `uv`.
 
 ### 1. Prove the code works (no data needed) — ~10 seconds
 ```bash
