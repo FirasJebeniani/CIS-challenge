@@ -1,7 +1,9 @@
+> **Historical development log.** Written while this layer was built; statements about work "pending" or "not yet" implemented describe that moment and are superseded. Current status: [README](../README.md) and [requirements.md](requirements.md).
+
 # Phase 5: attack experiments, replay and Layer 3 handoff
 
 This release implements the independently executable portions of steps 24–32.
-It does not contain a detector or an official dataset. All demonstration data are
+It does not contain the detector, which came later. All demonstration data are
 explicitly synthetic. Experiment signing proves which local experiment generator
 signed the input; it cannot establish the authenticity of an original dataset.
 
@@ -108,13 +110,13 @@ excluded evidence is retained in ReplayResult/WindowResult. No wall-clock sleeps
 MQTT broker or detector is required for offline execution. Bounds remain those
 of the processing policy (10,000 events by default; at most 128 closed windows).
 
-## Actual datasets: pending
+## Dataset boundary
 
 `adapters/dataset.py` defines a typed `DatasetAdapter` protocol and `Measurement`
 boundary with source ID, source record ID, original value/unit/time/location.
-No CSV column names, timezone assumptions, missing-value codes or official source
-values have been invented. A concrete adapter requires the actual dataset,
-source documentation/license, timezone/unit rules and evaluation split. The
+No CSV column names, timezone assumptions or missing-value codes are hard-coded. A
+concrete adapter maps a dataset's documented columns, license, timezone/unit rules
+and evaluation split (the WegenerNet adapter is `adapters/wegenernet.py`). The
 existing `ReferenceObservation` boundary remains the external-reference interface.
 
 ## Commands
@@ -137,8 +139,8 @@ L3 stub receipt. It explicitly reports `detection_evaluated: false`.
 | Step | Implemented/tested | Pending |
 | --- | --- | --- |
 | 24 | Direct FeatureWindow handoff and validated receiver stub; callback failure handling | Team acceptance and real L3 integration |
-| 25 | Typed dataset boundary with source-row traceability | Real dataset mapping, official-source validation and integration |
-| 26–29 | Post-sign tamper, unknown sensor, replay, deletion/reordering and signed chain break | Official standard scenario confirmation |
+| 25 | Typed dataset boundary with source-row traceability | Dataset mapping and integration (done later: WegenerNet) |
+| 26–29 | Post-sign tamper, unknown sensor, replay, deletion/reordering and signed chain break | Standard scenario integration (done later: `attacks/`) |
 | 30 | All eight signed attack families, L1 validation, L2 extraction and stub handoff | Real anomaly detection and evaluation |
 | 31 | Deterministic bounded replay of captured bytes using production L1b/L2 | Real historical dataset recordings |
 | 32 | Unit/integration tests, including real mTLS attack delivery | Native Windows Phase 5 execution |

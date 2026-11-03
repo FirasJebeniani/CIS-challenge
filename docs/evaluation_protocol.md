@@ -31,7 +31,7 @@ their own held-out attacks — can re-run it.
 | `records_bc` | L1 verification | signed-record stream with B/C faults |
 
 Station split is a seeded permutation (seed 2026): 108 dev / 46 held-out, interspersed through
-the same area. Grids (per-family size × duration × replicate) are in `docs/.../design.md §6` and
+the same area. Grids (per-family size × duration × replicate) are in [standard-scenario-design.md §6](standard-scenario-design.md) and
 `attacks/scenarios/grid_*.yaml`. **The held-out suite uses different stations, different sizes and
 two fault shapes never used in development, and is scored once per release — never used for tuning.**
 

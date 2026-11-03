@@ -1,3 +1,5 @@
+> **Historical development log.** Written while this layer was built; statements about work "pending" or "not yet" implemented describe that moment and are superseded. Current status: [README](../README.md) and [requirements.md](../docs/requirements.md).
+
 # Phase 1 verification results
 
 Verification was performed on Linux x86_64 with CPython 3.14.8. Exact installed
@@ -17,7 +19,7 @@ package versions and import results are recorded in `environment.json`.
 | Git private-key and environment exclusions | Confirmed with `git check-ignore` |
 
 `phase1-test-results.txt` contains command outputs and exit statuses. Tests are
-synthetic internal-contract tests, not official dataset evaluation. The full
+synthetic internal-contract tests, not a dataset evaluation. The full
 suite consists of 108 unit/regression checks and 6 integration checks. Integration
 checks cover serialization, dependency primitives and contract consumer stubs.
 They do not run a real detector, decision engine, broker or application pipeline.
@@ -45,7 +47,7 @@ availability here does not verify the user's local editor installation.
 
 Windows/macOS execution, MQTT v5/TLS communication, application signatures,
 hash-chain/replay state, semantic unit normalization, time alignment, feature
-calculations, all real L3/L4 integrations, official datasets, attack/evasion
+calculations, all real L3/L4 integrations, dataset integration, attack/evasion
 performance and benchmarks remain untested because their implementations or
 inputs belong to later phases. Phase 2 requires separate approval.
 

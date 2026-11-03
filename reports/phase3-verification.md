@@ -1,3 +1,5 @@
+> **Historical development log.** Written while this layer was built; statements about work "pending" or "not yet" implemented describe that moment and are superseded. Current status: [README](../README.md) and [requirements.md](../docs/requirements.md).
+
 # Phase 3 verification evidence
 
 Executed 2026-10-20 on Linux AMD64, CPython 3.14.8, with the unchanged hash-locked
@@ -53,7 +55,7 @@ Native Windows ACLs and the Windows broker build need user-side verification.
 Default pytest runs skip 10 opt-in broker tests; Windows also skips the existing
 POSIX symlink test. Full Linux testing above enables all broker tests.
 
-Actual L3/L4 implementations, official datasets, the standard attack/evasion
+Actual L3/L4 implementations, dataset integration, the standard attack/evasion
 scenario, detector metrics, performance benchmarks, long-duration stability,
 automatic reconnection, hardware anti-rollback and operational journal retention
 remain pending. The durable callback seam is tested with synthetic consumers;

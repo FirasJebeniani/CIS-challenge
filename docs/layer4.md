@@ -121,7 +121,8 @@ authenticating proxy (with HTTPS) before exposing it on a network.
 `scripts/demo_layer4.py` signs and verifies two days of synthetic readings for a 3×3 grid with the
 **real** Layer 1 code (public offline test keys). It contains a +3 K bias on one sensor (valid
 signatures), three forged messages on another, and one replay on a third. **Its Layer 3 rows are a
-synthetic stand-in** until a trained detector is available; the dashboard shows a banner saying so.
+synthetic stand-in**, because the trained detector expects the 162-site grid rather than a 3×3 demo grid; the
+dashboard shows a banner saying so. On real data, feed `score_stream` output from the trained detector instead.
 
 ## Limitations
 

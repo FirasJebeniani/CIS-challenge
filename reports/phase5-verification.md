@@ -1,3 +1,5 @@
+> **Historical development log.** Written while this layer was built; statements about work "pending" or "not yet" implemented describe that moment and are superseded. Current status: [README](../README.md) and [requirements.md](../docs/requirements.md).
+
 # Phase 5 verification — 20 October 2026
 
 ## Actual execution
@@ -51,7 +53,7 @@ This is user-reported evidence, not a Windows execution performed here.
 
 ## Remaining dependencies
 
-Real dataset adapters, official common scenario validation, team acceptance of
+Real dataset adapters, standard scenario integration, team acceptance of
 the L3 contract, actual detector/response integration and detection evaluation
 remain pending. All demo data/templates are synthetic. No detection success,
 false-positive rate, resource benchmark or final challenge compliance is claimed.

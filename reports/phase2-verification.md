@@ -1,3 +1,5 @@
+> **Historical development log.** Written while this layer was built; statements about work "pending" or "not yet" implemented describe that moment and are superseded. Current status: [README](../README.md) and [requirements.md](../docs/requirements.md).
+
 # Phase 2 verification results
 
 The release was tested on Linux x86_64 with CPython 3.14.8 and the checked-in
@@ -72,6 +74,6 @@ Phase 2 ACL and broker results remain pending execution of
 `docs/windows-phase2.md`.
 
 Layer 1b runtime provenance verification, replay/registry policy, Layer 2 signal
-processing, actual L3/L4 integration, official dataset evaluation, detection
+processing, actual L3/L4 integration, dataset evaluation, detection
 metrics, automatic reconnect stability and benchmarks are later phases. No
 challenge detection result or performance claim is made by the 184 tests.

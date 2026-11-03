@@ -1,3 +1,5 @@
+> **Historical development log.** Written while this layer was built; statements about work "pending" or "not yet" implemented describe that moment and are superseded. Current status: [README](../README.md) and [requirements.md](../docs/requirements.md).
+
 # Phase 4 verification evidence
 
 Executed 2026-10-20 on Linux AMD64 with CPython 3.14.8, Mosquitto 2.1.2 and the
@@ -53,7 +55,7 @@ SignedReading, VerifiedReading and FeatureWindow schemas were retained.
 Steps 17–21 and 23 are implemented and tested. Step 22's source-independent
 interface and matching behavior are implemented/tested; authentic weather,
 satellite or reanalysis sources and their concrete adapters remain pending.
-Synthetic fixtures and the synthetic_demo source are not official datasets.
+Synthetic fixtures and the synthetic_demo source are not real weather data.
 
 Phase 4 operates on bounded snapshots, with explicit time intervals and as-of
 cutoffs. Production streaming persistence/scheduling, larger-journal segmentation,

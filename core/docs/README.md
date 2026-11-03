@@ -201,7 +201,7 @@ evaluation year.
 
 Replays use 14-day episodes; the first 24 h of each are warm-up and never alert.
 
-**12 synthetic attack families**, generated reproducibly by [`detector/attacks.py`](../detection/attacks.py) and
+**12 synthetic attack families**, generated reproducibly by [`core/detection/attacks.py`](../detection/attacks.py) and
 injected *before* feature extraction (the detector only sees the manipulated values). Labels mark only readings
 whose value actually changed.
 
@@ -359,10 +359,9 @@ data) and `outputs/` (metrics, per-variable and per-family tables, `RESULTS.md`)
 ## 9. Scope and limitations
 
 - **Layer 3 only.** Signatures, sequence and replay checks belong to Layer 1, and trust states, quarantine and
-  imputation to Layer 4. The team's standard attack scenario and evasion tests are in
-  [FirasJebeniani/CIS-challenge](https://github.com/FirasJebeniani/CIS-challenge/tree/attack-scenarios). That
-  benchmark uses 5-minute station data; this detector needs to be trained on station data before it can be graded
-  there.
+  imputation to Layer 4. The team's station attack suite and evasion sweep are in `attacks/` and `eval/`
+  ([evaluation-suite.md](../../docs/evaluation-suite.md)). That suite uses 5-minute station data; this detector is
+  trained on the half-hourly grid and must be retrained on station data before it can be graded there.
 - **Synthetic attacks on gridded data.** Grid cells are interpolated, not independent sensors. The 2024 attacks
   use unseen amplitudes, new placements and three unseen families, but come from the same generator as the training
   attacks. The 2024 figures are therefore strong evidence, not an independent benchmark.
@@ -372,7 +371,8 @@ data) and `outputs/` (metrics, per-variable and per-family tables, `RESULTS.md`)
   - *Wide patches*: an attack covering a whole neighbourhood also corrupts the spatial reference. An external
     reference (satellite or reanalysis) is the natural fix.
   - *Single-reading spikes*: one reading gives little evidence.
-- **Not measured:** per-message live latency and peak memory.
+- **Latency and memory** (`python -m eval.detector_overhead`): a live 30-minute tick for all 486 streams takes a
+  median 0.2 s on a 2-core CPU; peak memory 0.85 GB ([docs/results.md](../../docs/results.md#detector-latency-and-memory)).
 - An alert is evidence for investigation, not proof of an attack.
 
 **Data:** WegenerNet Level 2 v8.0 (2025.1), Wegener Center, University of Graz,

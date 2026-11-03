@@ -1,11 +1,11 @@
 # Standard Scenario & Evaluation Suite — Design (Track 2, False-Data Injection)
 
-Date: 2026-10-27 · Owner workstream: attack scenarios ("the exam") · Phase 1 deadline assumed **2026-11-03** (earlier of the two dates in the brief)
+Date: 2026-10-27
 
 ## 1. Intent
 
 The team's prototype (L1 signatures → L2 features → L3 detectors → L4 trust) is judged on how well it catches
-false data. No official standard scenario was published, so this workstream **defines it**: a versioned,
+false data. This workstream builds the **standard scenario**: a versioned,
 seeded, reproducible set of labelled fault scenarios injected into real WegenerNet data, plus the scoring that
 turns detector output into the numbers the jury asks for (detection quality, false alarms, latency).
 
@@ -29,8 +29,8 @@ Phase 2 "Held-out standard attack & evasion" (20, first tie-breaker) — and fal
 
 - Non-goal: building detectors, signer/verifier, dashboard (teammates).
 - The "evasion" criterion is met by three things: held-out variants (different stations/sizes/shapes), the
-  escape-magnitude search against the detector (plan Task 14), and the statistics-matched / cycle-shaped / network-wide
-  families (plan Tasks 15, 16, 18) that each defeat one detector family so the others must carry the catch.
+  escape-magnitude search against the detector, and the statistics-matched / cycle-shaped / network-wide
+  families that each defeat one detector family so the others must carry the catch.
 - Anti-goal: anyone tuning detectors on the held-out suite.
 - Anti-goal: injected values outside physical range (RH > 100 %, negative rain) — trivially caught, unrealistic.
 - Anti-goal: point-adjusted metrics (they inflate scores); committing raw data or the cloud share link;
@@ -74,13 +74,13 @@ Phase 2 "Held-out standard attack & evasion" (20, first tie-breaker) — and fal
 | `value_replay` *(heldout)* | verbatim copy of the station's window from `days_back` days ago + noise·σ_ref | days_back, noise | Replay (value-level, strong evasion) |
 | `network_bias` *(held-out)* | k·σ_ref offset on **all** stations in the pool at once (defeats neighbour consistency) | k | Colluding neighbours (network-wide) |
 
-The last three are specified in plan Tasks 15, 16, 18 — all remain synthetic perturbations of public data, scored by the same harness to quantify where the detector is weak. `realistic_replace` and `cycle_shaped` are designed so that spatial/cross-source detectors still catch them; `network_bias` is the case only cross-source catches, and motivates the remote-sensing component.
+The last three all remain synthetic perturbations of public data, scored by the same harness to quantify where the detector is weak. `realistic_replace` and `cycle_shaped` are designed so that spatial/cross-source detectors still catch them; `network_bias` is the case only cross-source catches, and motivates the remote-sensing component.
 
 **Category B/C — record faults (L1 must catch):** `tamper_value`, `replay`, `drop`, `reorder`, `shift_timestamp`,
 `rewrite_stored`, `unknown_sensor`, each with an expected L1 status from {bad_signature, replay, gap,
 out_of_window, unknown_sensor}.
 
-**Adaptive-difficulty evaluation (plan Task 14):** not a new family — a search that reports, per base family, the smallest magnitude the detector fails to catch (the blind-spot boundary). This is the "evasion" result, framed as a robustness number.
+**Adaptive-difficulty evaluation:** not a new family — a search that reports, per base family, the smallest magnitude the detector fails to catch (the blind-spot boundary). This is the "evasion" result, framed as a robustness number.
 
 Physical clipping after injection: RH ∈ [0, 100]; precipitation ≥ 0; T unclipped.
 
@@ -94,10 +94,10 @@ Physical clipping after injection: RH ∈ [0, 100]; precipitation ≥ 0; T uncli
 | `clean2024` | false-alarm rate | 2024 untouched |
 | `showcase` | demo + figures | one hand-written scenario per family |
 | `records_bc` | L1 verification | signed-record streams with B/C faults |
-| `crosssource` | remote-sensing result | `network_bias` scenarios (plan Task 18) |
-| `adaptive_probe` | evasion/robustness | per-family escape-magnitude scenarios vs a given detector (plan Task 14) |
+| `crosssource` | remote-sensing result | `network_bias` scenarios |
+| `adaptive_probe` | evasion/robustness | per-family escape-magnitude scenarios vs a given detector |
 
-Grids (σ_ref units unless stated). Each row gives the swept parameter list(s) and the window duration; `expand` is the Cartesian product of the parameter list(s) × the durations × replicates × applicable variables. Replicates: dev 2, dev-precipitation 3, heldout 2, smoke 1. Value families (`offset, drift, spike, noise, flatline, stuck, multi_offset`) apply to `air_temperature` and `relative_humidity`; `rain_*` to `precipitation`; `gain, intermittent_offset` are **heldout-only**; `network_bias` is heldout-only (plan Task 18); `realistic_replace, cycle_shaped` have their own grids in plan Tasks 15/16.
+Grids (σ_ref units unless stated). Each row gives the swept parameter list(s) and the window duration; `expand` is the Cartesian product of the parameter list(s) × the durations × replicates × applicable variables. Replicates: dev 2, dev-precipitation 3, heldout 2, smoke 1. Value families (`offset, drift, spike, noise, flatline, stuck, multi_offset`) apply to `air_temperature` and `relative_humidity`; `rain_*` to `precipitation`; `gain, intermittent_offset` are **heldout-only**; `network_bias` is heldout-only; `realistic_replace, cycle_shaped` have their own grids in `attacks/scenarios/grid_*.yaml`.
 
 | Family | dev params | dev duration(s) | heldout params | heldout duration(s) |
 |---|---|---|---|---|
@@ -129,8 +129,8 @@ Station split dev/held-out: deterministic shuffle with seed 2026.
 - **Point metrics:** precision / recall / F1 over (time, station) cells, no point-adjust.
 - **Release leakage (headline):** share of faulted (time,station) cells released as trusted (not alarmed, or state = trusted if L4 emits states) — the brief's "corrupted observation reaches the analyst", with mean leaked magnitude and an optional downstream-impact weighting.
 - **False alarms:** on `clean2024`, alarms per station-day, overall and excluding gap-filled cells.
-- **Efficiency / security overhead:** detector per-window latency p50/p95, peak memory on `dev`, Ed25519 sign+verify throughput and added bytes per record (plan Task 17).
-- **Escape magnitude (evasion):** per family, the largest magnitude the detector misses (plan Task 14).
+- **Efficiency / security overhead:** detector per-window latency p50/p95, peak memory on `dev`, Ed25519 sign+verify throughput and added bytes per record.
+- **Escape magnitude (evasion):** per family, the largest magnitude the detector misses.
 - **Sensitivity:** recall by family × size; **MDM90** = smallest size with recall ≥ 0.9 (the residual-risk
   boundary reported as the evasion result).
 - **Records:** per B/C type, share of faulted records whose verifier status matches the expected status;

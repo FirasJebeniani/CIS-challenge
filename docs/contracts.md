@@ -1,8 +1,8 @@
-# Provisional internal data contracts
+# Internal data contracts
 
-Version 1.0 is a team interface proposal pending L3/L4 review. It does not
-describe an official dataset, a trained model input layout or a completed wire
-protocol. Generated JSON schemas are in `docs/schemas/`.
+Version 1.0 of the typed contracts between the layers (`core/contracts.py`). Generated JSON schemas are
+in `docs/schemas/`. Layer 3 consumes Layer 2 output through `core/detection/adapter.py`; Layer 4 consumes
+Layer 1 verdicts and Layer 3 rows as described in [layer4.md](layer4.md).
 
 ## Shared rules
 
@@ -132,12 +132,12 @@ Adapters must preserve separate evaluation labels; no label field exists in
 these detector contracts. Extra fields alone do not prevent leakage in feature
 names or values: evaluation review must audit feature generation too.
 
-## L3 and L4 integration agreement still needed
+## L3 and L4 integration
 
-Confirm quantity set, feature names/order/units, window size/stride, late-arrival
-policy, missingness handling, spatial neighbors, reference-data tolerances,
-L3 detector interface and L4 event consumer. The contract integration tests
-use explicit consumer stubs; no real L3/L4 code has been tested.
+The Layer 2 → Layer 3 adapter (`core/detection/adapter.py`, tested in `core/tests/test_adapter.py`) maps
+FeatureWindows to the detector's [time, site, variable] input and checks quantity and unit compatibility.
+Layer 4 (`core/response/trust.py`, tested in `core/tests/test_response.py`) consumes every Layer 1 verdict
+and the detector's `score_stream` rows.
 
 ## Phase 3 runtime boundary
 
@@ -146,7 +146,7 @@ cryptographic verification, sequence/time/chain checks and durable audit commit.
 Never trust a remotely supplied VerifiedReading. Wire/schema fields are unchanged.
 Only `valid` non-null readings reach the optional L2 callback. All statuses reach
 L4 through `ProvenancePipeline`, with a stable event ID scoped to the retained
-receiver database. L3/L4 team acceptance remains pending.
+receiver database.
 
 ## Phase 4 processing boundary
 

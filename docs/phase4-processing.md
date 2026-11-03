@@ -6,9 +6,10 @@ causal reference matching and immutable FeatureWindow construction. It preserves
 the v1 signed wire format and all existing contracts. No dataset format, dataset
 contents or detector performance is assumed.
 
-Step 22's generic interface is implemented and tested. Real meteorological,
-satellite or reanalysis integration remains pending actual source URLs, licenses,
-columns, units, coordinate systems, temporal resolution and publication times.
+Step 22's generic interface is implemented and tested. A concrete meteorological,
+satellite or reanalysis source plugs in through an adapter that declares its URL, license,
+columns, units, coordinate system, temporal resolution and publication time
+(ERA5-Land: `data_prep/reference.py`).
 The reference model currently represents point observations. Do not disguise
 interval averages, grids or forecasts as point measurements: their real metadata
 must guide the later adapter and any agreed contract extension.

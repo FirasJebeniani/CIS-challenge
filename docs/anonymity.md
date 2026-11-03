@@ -15,6 +15,18 @@ state must not be committed. Gitignore does not remove previously tracked
 secrets or sanitize repository history. Follow organizer guidance for creating
 and submitting the anonymous repository.
 
-This delivery has no names, unit names or logos in authored project files.
-It does not create a GitHub repository or guarantee anonymity of your account.
-The source archive omits local Git history and environment paths.
+## Status of this repository
+
+- Authored files contain no names, unit names or logos (checked by a full-text search before submission).
+- The Git history of the development repository records author names and e-mail addresses, and the
+  repository sits under a personal account. **Do not submit that repository as is.** Submit either a
+  fresh repository with a single commit by a neutral author, or a source archive without `.git`:
+
+  ```bash
+  git archive --format=zip -o submission.zip HEAD          # source only, no history
+  # or a fresh history:
+  git checkout --orphan submission && git add -A
+  git -c user.name="Team" -c user.email="team@example.invalid" commit -m "Phase 1 submission"
+  ```
+
+- Check the report PDF's document properties (author, creator) before upload.
