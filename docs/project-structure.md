@@ -14,7 +14,7 @@ To test the model as a jury member, read **[jury-guide.md](jury-guide.md)**.
 
 | Path | Purpose |
 |---|---|
-| `README.md` | Entry point: links to every layer's documentation, plus the historical phase notes |
+| `README.md` | Entry point: overview, headline results, quick start, links to every layer |
 | `GUIDE.md` | Plain-language tour of the attack-scenario and evaluation suite |
 | `pyproject.toml` | Package definition and pytest settings (`tests/` is the default test folder) |
 | `requirements.txt` | Hash-pinned core dependencies (Layers 1–2, tests): `pip install --require-hashes -r requirements.txt` |
@@ -52,7 +52,7 @@ To test the model as a jury member, read **[jury-guide.md](jury-guide.md)**.
 | `adapters/` | Input/output boundaries: `live_mqtt.py` and `mqtt_transport.py` (mutual-TLS MQTT), `replay.py` (offline replay of recorded wire bytes through the real code), `wegenernet.py` (reads WegenerNet NetCDF grids for Layers 1–2), `feature_export.py` (writes FeatureWindows to CSV/JSONL), `dataset.py`, `reconnect.py` |
 | `attacks/` | Attack scenarios. **Station suite** (from the attack-scenarios branch): `schema.py`, `families.py`, `grid.py`, `placement.py`, `injector.py`, `build_suites.py` build labelled attacks on 5-minute station data; `records.py`, `build_records.py` build record-level (in-transit) attacks; `adaptive.py` measures escape magnitude. **Layer 1 experiments**: `false_data.py`, `wire.py`, `security_demo.py`, `scenario.py`, `offline_state.py`. `scenarios/*.yaml` hold the suite grids |
 | `data_prep/` | Station-data preparation for the attack suite: `download.py` (WegenerNet 5-minute station zips), `build.py` (clean tables), `stations.py` (locations, neighbours), `wegenernet.py` (CSV reader), `reference.py` (ERA5 reference for the cross-source check) |
-| `eval/` | Evaluation tools: `scoring.py`, `run.py`, `run_baselines.py`, `baselines.py` (score detectors on the station suites); `escape.py` (evasion boundary); `report.py` (figures); `overhead.py`, `performance.py`, `bench_crypto.py`, `transport_benchmark.py`, `local_broker.py` (cost and transport measurements); `metrics.py`; `layer4_threshold_sim.py` (simulation behind the Layer 4 thresholds) |
+| `eval/` | Evaluation tools: `scoring.py`, `run.py`, `run_baselines.py`, `baselines.py` (score detectors on the station suites); `escape.py` (evasion boundary); `report.py` (figures); `detector_overhead.py` (Layer 3 latency and memory), `overhead.py`, `performance.py`, `bench_crypto.py`, `transport_benchmark.py`, `local_broker.py` (cost and transport measurements); `metrics.py`; `layer4_threshold_sim.py` (simulation behind the Layer 4 thresholds) |
 | `dashboard/` | Layer 4 analyst dashboard: `app.py` (FastAPI, server-rendered HTML, JSON API) and `static/style.css` |
 | `scripts/` | Command-line tools. **Jury-facing:** `try_detector.py` (plant an attack, see the detector's answer), `demo_layer4.py` (demo data for the dashboard). **Layers 1–2:** `setup_local.py`, `manage_registry.py`, `manage_recovery.py`, `receive_mqtt.py`, `observe_mqtt.py`, `demo_signing.py`, `demo_processing.py`, `demo_attacks.py`, `build_feature_window.py`, `export_schemas.py`. **WegenerNet export:** `export_wegenernet*.py`, `validate_wegenernet_export.py`, `inspect_wegenernet_flags.py`, `compact_audit_lineage.py`. `check_environment.py` checks dependencies |
 | `tests/` | Tests for Layers 1–2 and the attack suite (`python -m pytest tests`); broker tests need `--run-broker` and a local Mosquitto |
@@ -70,15 +70,18 @@ To test the model as a jury member, read **[jury-guide.md](jury-guide.md)**.
 
 | File(s) | Content |
 |---|---|
+| `report.pdf`, `report/` | The Phase 1 report (IEEE conference format) and its LaTeX source: `cd docs/report && latexmk -pdf report.tex` |
 | `jury-guide.md` | How to install, test and read the output of the model |
+| `layer1-2.md` | Layers 1–2 operator detail: signing demo, MQTT/TLS demo, delivery semantics, source layout |
 | `project-structure.md` | This file |
 | `layer4.md`, `layer4-thresholds.md` | Layer 4 design, dashboard, thresholds and their justification |
 | `contracts.md`, `schemas/*.json` | Inter-layer contracts (prose and JSON Schema) |
-| `architecture-decisions.md`, `threat-model.md`, `requirements.md`, `anonymity.md` | Design decisions, threat model, requirement tracking, submission anonymity |
+| `architecture-decisions.md`, `threat-model.md`, `requirements.md`, `anonymity.md` | Design decisions, threat model, requirement status against the challenge, submission anonymity |
 | `evaluation-suite.md`, `attack_catalogue.md`, `evaluation_protocol.md`, `results.md`, `manifests/`, `figures/` | The station attack suite: how to run it, the attack families, the protocol, recorded baseline results |
 | `half-hourly-integration.md`, `hourly-integration.md`, `layer3-half-hourly-handoff.md` | WegenerNet export from Layers 1–2 and the hand-off to Layer 3 |
-| `phase2-security.md` … `phase6-performance-reliability.md`, `windows-*.md` | Historical development notes per phase, with Windows instructions |
-| `superpowers/` | Design spec and implementation plan of the station attack suite |
+| `phase2-security.md` … `phase6-performance-reliability.md` | Design notes for Layers 1–2 per development phase |
+| `windows-*.md` | Windows (PowerShell) instructions per development phase |
+| `standard-scenario-design.md` | Design specification of the station attack suite (families, grids, splits) |
 
 ## Evidence — `reports/`
 

@@ -1,3 +1,5 @@
+> **Historical development log.** Written while this layer was built; statements about work "pending" or "not yet" implemented describe that moment and are superseded. Current status: [README](../README.md) and [requirements.md](requirements.md).
+
 # Architecture decisions
 
 The updated 40-step plan is the implementation baseline. Its modular structure

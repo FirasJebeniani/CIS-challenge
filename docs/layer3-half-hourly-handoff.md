@@ -1,3 +1,5 @@
+> **Historical hand-off note** from Layer 2 to Layer 3, written before the detector was trained on the full 2023–2024 data. Current detector: [core/docs/README.md](../core/docs/README.md).
+
 # Layer 3 handoff
 
 The new workflow emits one row per selected cell per 30-minute source interval.

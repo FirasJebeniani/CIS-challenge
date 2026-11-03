@@ -1,3 +1,5 @@
+> **Historical development log.** Written while this layer was built; statements about work "pending" or "not yet" implemented describe that moment and are superseded. Current status: [README](../README.md) and [requirements.md](../docs/requirements.md).
+
 # Phase 3 verification evidence
 
 Executed 2026-10-20 on Linux AMD64, CPython 3.14.8, with the unchanged hash-locked

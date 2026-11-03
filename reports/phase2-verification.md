@@ -1,3 +1,5 @@
+> **Historical development log.** Written while this layer was built; statements about work "pending" or "not yet" implemented describe that moment and are superseded. Current status: [README](../README.md) and [requirements.md](../docs/requirements.md).
+
 # Phase 2 verification results
 
 The release was tested on Linux x86_64 with CPython 3.14.8 and the checked-in

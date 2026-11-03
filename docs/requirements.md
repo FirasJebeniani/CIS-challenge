@@ -1,75 +1,46 @@
-# Requirement and development tracking
+# Requirement status against the challenge
 
-Source documents supplied for this project are the two-page official challenge
-PDF, the updated 40-step development plan and the earlier Layers 1/2 architecture.
-The official PDF does not name the reference datasets or define the common
-Track 2 attack/evasion scenario. No dataset schema is assumed.
+Status of every requirement of the official challenge brief (Track 2: False-Data Injection) at the Phase 1
+submission. "Evidence" points to the code, test or result that supports the claim.
 
-## Official criteria
+## Six mandatory deliverables
 
-| Requirement or criterion | Phase 1 foundation | Remaining evidence |
+| Deliverable | Status | Evidence |
 | --- | --- | --- |
-| Exactly one track | Track 2 documented | Team submission selection |
-| Authentic public data and official reference datasets | Adapter boundary documented | Dataset URLs, licenses, actual columns, official standard scenario |
-| Threat model and segment analysis | Initial threat model | Validate with actual deployments and official attack scope |
-| Architecture and trust anchor | Modular scaffold and contracts | Deployment trust separation and hardware/remote anti-rollback evidence |
-| Signal processing | Phase 4 normalization, alignment and feature algorithms tested | Official sources, deployment parameter calibration and L3 acceptance |
-| AI/statistical detection | Provisional L3 input boundary | L3 implementation, training/evaluation split and detector results |
-| Adversarial validation and response | Status/event types and threat scenarios | Held-out official scenario tests and L4 response integration |
-| Detection quality and false alarms | No metrics claimed | Labeled standard evaluation and attack/evasion results |
-| Latency, memory, security overhead | Actual synthetic local benchmark and resource reports | Native Windows results, deployment-scale and broker-resource measurements |
-| Local affordable execution | Python environment and local tests | Full prototype and clean-machine demonstration |
-| Documentation/reproducibility | README, hash-locked dependencies, test evidence | Later-phase documentation and official data instructions |
-| Anonymous Phase 1 submission | Anonymous defaults and checklist | Final repository/history/artifact audit |
+| 1. Threat model & segment analysis | Done | [threat-model.md](threat-model.md), [core/docs/data_and_threat_model.md](../core/docs/data_and_threat_model.md), [attack_catalogue.md](attack_catalogue.md) |
+| 2. Platform / architecture / trust anchor | Done (software trust anchor) | Ed25519 + hash chain + key registry in `core/provenance/`; [layer1-2.md](layer1-2.md), [phase2-security.md](phase2-security.md), [phase3-security.md](phase3-security.md) |
+| 3. Signal processing | Done | `core/processing/` (validation, alignment, rolling/spectral/spatial features); 37 causal detector features in `core/detection/features.py` |
+| 4. AI or statistical detection | Done | Extra Trees per variable, calibrated p-values, frozen alert rule: [core/docs/README.md](../core/docs/README.md) |
+| 5. Adversarial validation & response | Done | 12 attack families incl. 3 unseen; station suite with held-out stations and an evasion sweep; Layer 4 trust/quarantine/imputation: [layer4.md](layer4.md) |
+| 6. Documentation with reference datasets | Done | [report.pdf](report.pdf), [jury-guide.md](jury-guide.md); WegenerNet L2 v8.0, CC BY 4.0 |
 
-Phase 1 scoring from PDF page 2: threat model 15; architecture 15; processing 15;
-detector design/evaluation 20; standard scenario/evasion 20; local feasibility 10;
-clarity/reproducibility 5. Phase 1 contributes 30% of the final score and Phase 2
-70%. No bonus points are awarded. Dataset use and evaluation readiness must
-receive early attention alongside cryptography.
+## Challenge goals
 
-## Development progress after Phase 6 implementation
+| Goal | Status | Evidence |
+| --- | --- | --- |
+| Use authentic public data | Done | WegenerNet Level 2 v8.0 (DOI 10.25364/WEGC/WPS8.0-2025.1), gridded half-hourly and 5-minute stations |
+| Apply the common standard scenario | Partly | No official scenario file was published; the team defined a versioned, seeded scenario (`attacks/`, [evaluation_protocol.md](evaluation_protocol.md)). The trained detector is evaluated on its own chronological held-out protocol; grading it on the station suite needs a station-data retrain (Phase 2) |
+| Detect or prevent the attack | Done | Layer 1 prevents in-transit/stored tampering; Layer 3 detects valid-signature false data; Layer 4 withholds or imputes |
+| Report detection quality | Done | Precision, recall, F1, event detection, delay: [core/docs/README.md § 5](../core/docs/README.md#5-results) |
+| Report false alarms | Done | 0.013 false-alert episodes per stream-day on clean 2024 |
+| Report latency | Done | Detector live tick median 202 ms for 486 streams: [results.md](results.md#detector-latency-and-memory) |
+| Report memory | Done | Detector peak RSS 852 MB; Layer 1–2 in `reports/phase6-benchmark-linux.json` |
+| Report security overhead | Done | 104 B/record, ~11,300 verifications/s: [results.md](results.md#efficiency--security-overhead) |
+| No purchase; local laptop execution | Done | CPU only, no GPU, cloud service or paid API |
 
-| Phase / steps | State at this delivery |
+## Phase 1 rules
+
+| Rule | Status |
 | --- | --- |
-| 1 / 1 | Python/dependencies verified locally; user supplied Windows results confirm Python 3.14.0, Mosquitto 2.1.2, Git and VS Code |
-| 1 / 2 | Scaffold, ignores, VS Code settings and Git preparation complete; no remote created |
-| 1 / 3 | Provisional contracts and automated tests implemented; L3/L4 acceptance pending |
-| 2 / 4 | Three independent temperature simulators implemented; actual CLI exercised against a broker |
-| 2 / 5 | Encrypted Ed25519 keys, public registry description, exclusive provisioning and file protections implemented |
-| 2 / 6-7 | Canonical CBOR signing and domain-separated hash chains implemented and tested |
-| 2 / 8-9 | MQTT v5, mutual TLS, per-sensor ACLs and bounded canonical CBOR implemented; actual broker tests executed |
-| 2 / 10 | Independent keys/sequences/chains, three-sensor live publication and restart continuity tested |
-| 3 / 11-16 | Implemented: bounded live receiver, explicit registry/revocation/rotation, Ed25519 verification, persistent replay/time/chain policy, durable L4 routing; tested with real broker |
-| 4 / 17-18 | Implemented/tested: all six semantic cases, C/F/K normalization, immutable raw evidence and duplicate handling |
-| 4 / 19-21 | Implemented/tested: UTC alignment, variable sample rates, missingness, rolling/statistical/conditional spectral features and configured-neighbor comparisons |
-| 4 / 22 | Generic reference interface, unit/time/location matching and availability checks implemented/tested; actual official datasets and source adapters pending |
-| 4 / 23 | Existing FeatureWindow constructed and round-trip tested with provenance, raw/normalized values and feature availability |
-| 5 / 24 | Implemented/tested: direct FeatureWindow callable handoff and stub; real L3 acceptance pending |
-| 5 / 25 | Typed source-traceable dataset boundary; actual data adapters pending supplied sources |
-| 5 / 26-29 | Implemented/tested: post-sign tamper, unknown sensor, replay, deletion/reordering, signed chain break |
-| 5 / 30 | Eight configurable signed families and feature extraction tested; detector evaluation pending |
-| 5 / 31-32 | Deterministic isolated replay and unit/integration tests, including real broker attack delivery |
-| 6 / 33 | Implemented/tested: multi-series primitive/durable/L2 latency statistics and real MQTT timing |
-| 6 / 34 | Implemented/tested: CPU/RSS/Python allocation observations, message sizes and controlled serialization/TLS comparisons |
-| 6 / 35 | Implemented/tested: bounded retries, explicit recovery archive, concurrent-sensor soak with restart/gap/duplicate faults; extended deployment soak pending |
-| 6 / 36 | Metrics formulas and strict evaluation-only input validated; real L3 predictions and approved labeled datasets pending |
-| 7 / 37-40 | Pending |
+| Exactly one track | Track 2 |
+| Team of at most 5 | Team matter |
+| Anonymous submission (no names, unit names, logos, identifying metadata) | Authored files checked; submit without the development Git history ([anonymity.md](anonymity.md)) |
 
-The six semantic validator cases (Celsius, Fahrenheit, Kelvin, wrong types, nulls
-and unknown units) are explicitly implemented in tests/test_validator.py. These
-semantic tests supplement the original envelope contract tests.
+## Known limitations carried into Phase 2
 
-## Unresolved inputs and decisions
-
-1. Official reference dataset links and Track 2 common attack/evasion specification.
-2. L3/L4 code or interface agreement, features, missingness, windows and routing.
-3. Native Windows Phase 6 execution remains pending. User-supplied Phase 5 broker run: 360 passed, 1 skipped in 57.40s; attack demo also succeeded.
-4. Conservative stream policy remains enforced. Phase 6 adds transport retries and explicit retained-byte recovery; automatic archival rotation, multi-hour soak and recovery beyond freshness limits remain operational work.
-5. Geographic metadata, trusted neighbors and available external references.
-6. Clarification of deadline conflict: page 1 says 8 November 2026; page 2 says
-   first submission 3 November and preselection 8 November. Plan for the earlier
-   date until organizers clarify. Competition phases differ from development phases.
-
-Do not claim official compliance, detection performance or final compatibility
-until the relevant evidence is available.
+1. Detector trained on the half-hourly grid; retrain and grade it on the station suite (`dev`, `heldout`, `crosssource`).
+2. Coordinated whole-network bias needs an independent reference (ERA5-Land or satellite); the adapter exists
+   (`data_prep/reference.py`) and requires a Copernicus key.
+3. Weak families: single-step spikes, rain scaling, wide patches ([core/docs/README.md § 9](../core/docs/README.md#9-scope-and-limitations)).
+4. Software trust anchor only: a compromised verifier host or stolen keys are out of scope.
+5. Layer 4 trust state is in memory; the audit log persists.

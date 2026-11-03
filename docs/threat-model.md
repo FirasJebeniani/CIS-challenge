@@ -1,15 +1,17 @@
-# Initial threat model
+# Threat model
 
 The defended segment is in-situ sensor ingestion into an Earth-observation
-analysis pipeline. This scope follows the team's Track 2 architecture and must
-be checked against the missing official standard scenario.
+analysis pipeline (Track 2: false-data injection). The Layer 3 attacker model,
+attack families and leakage controls are detailed in
+[core/docs/data_and_threat_model.md](../core/docs/data_and_threat_model.md); the full
+attack catalogue with expected catching layer is in [attack_catalogue.md](attack_catalogue.md).
 
 Protected assets are measurement integrity, sensor identity, freshness,
 processing evidence, detector inputs and security decisions. Trusted components
 are the verifier host, provisioned registry, local policy/state, processing code
 and configured trust roots. A software trust anchor is the initial target.
 
-| Attacker capability | Planned control | Residual limitation |
+| Attacker capability | Control (implemented) | Residual limitation |
 | --- | --- | --- |
 | Modify a measurement in transit | Ed25519 integrity verification and TLS | Endpoint compromise remains possible |
 | Publish under an unknown sensor/key | Authorized key registry and broker ACLs | Registry provisioning must be protected |
@@ -27,6 +29,8 @@ physically plausible falsifications, or a provable distinction between every
 network fault and attack. These limitations guide evaluation rather than
 excusing missing controls.
 
-Phase 1 implements structural constraints and interface separation only. The
-controls above remain planned unless explicitly marked implemented in the
-requirement tracker.
+All controls in the table are implemented and tested: Layer 1 controls in
+`core/provenance/` (tests `tests/test_phase2_*`, `tests/test_phase3_*`,
+`tests/test_security_boundaries.py`), Layer 3 detection in `core/detection/`
+(`core/tests/test_detector.py`, including the leakage tests) and the Layer 4
+response in `core/response/`. Status per requirement: [requirements.md](requirements.md).

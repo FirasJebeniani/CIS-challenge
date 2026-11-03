@@ -1,3 +1,5 @@
+> **Historical development log.** Written while this layer was built; statements about work "pending" or "not yet" implemented describe that moment and are superseded. Current status: [README](../README.md) and [requirements.md](../docs/requirements.md).
+
 # Phase 5 verification — 20 October 2026
 
 ## Actual execution

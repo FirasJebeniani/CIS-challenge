@@ -31,7 +31,7 @@ released, and keeps a tamper-evident audit log ([docs/layer4.md](layer4.md)).
 | | Tested with |
 |---|---|
 | OS | Linux (Ubuntu); the code also has Windows instructions in `docs/windows-*.md` |
-| Python | 3.14.4 |
+| Python | 3.14.4 and 3.13 (clean install re-checked on 3.13) |
 | CPU / RAM | 8 cores, 14 GB RAM. Training peaks at 3.5 GB, evaluation under 1 GB; no GPU, no cloud service |
 | Disk | about 20 GB with the data (9.3 GB of NetCDF files plus the zips) |
 
@@ -57,6 +57,15 @@ Expected: **745 passed, 17 skipped**. The 17 skipped tests need a local Mosquitt
 (`--run-broker`). The detector's own 19 tests are in `core/tests/test_detector.py`; they check, among
 other things, that changing a future value never changes an earlier feature (no look-ahead) and that
 attack labels never reach the detector's inputs.
+
+Then measure the detector's latency and memory (no data needed, about 20 s):
+
+```bash
+python -m eval.detector_overhead
+```
+
+It loads the shipped model and prints, among others, `live_tick.median_ms` (time to score one new
+30-minute step for all 486 streams) and `peak_rss_mb`. The output is saved to `reports/detector-overhead.json`.
 
 ## 3. Get the data
 

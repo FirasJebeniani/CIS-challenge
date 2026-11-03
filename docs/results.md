@@ -1,7 +1,10 @@
 # Results
 
-Generated numbers for the Phase 1 report. Detection/leakage/false-alarm tables are added
-once the detector and scoring land; the efficiency section below is final.
+Results of the **station attack suite** (5-minute WegenerNet stations) and the security overhead.
+The trained Layer 3 detector's results on the half-hourly grid are in
+[core/docs/README.md § 5](../core/docs/README.md#5-results); its latency and memory are in
+[§ Detector latency and memory](#detector-latency-and-memory) below. The consolidated picture is in the
+[Phase 1 report](report.pdf).
 
 ## Suite calibration (reference baseline on the dev suite)
 
@@ -71,5 +74,26 @@ This is the Layer-1 provenance cost — the "security overhead" the brief asks f
 
 Interpretation: verifying every reading from all 154 stations (one reading per 5 min = 0.51
 readings/s network-wide) uses a negligible fraction of one core; provenance is not a
-bottleneck on a laptop. Detector latency, peak memory, and per-family detection/leakage
-numbers follow once the detector is wired through `eval.overhead` and `eval.run`.
+bottleneck on a laptop.
+
+## Detector latency and memory
+
+Measured with `python -m eval.detector_overhead` (output: [`reports/detector-overhead.json`](../reports/detector-overhead.json))
+on a 2-core x86-64 Linux machine, Python 3.13, the shipped artifacts, CPU only. The input is synthetic with the
+exact production shape (162 sites × 3 variables, 30-minute steps); latency and memory depend on the shape,
+not on the values.
+
+| Metric | Value |
+|---|---|
+| Load and verify the frozen artifacts (SHA-256 check) | 0.33 s |
+| **Live tick**: score one new 30-minute step for all 486 streams, with 24 h of history | **median 202 ms, p95 236 ms, max 276 ms** |
+| Live tick, per reading | 0.42 ms |
+| Real-time headroom | one tick every 30 min = 1,800,000 ms → under 0.02 % of the interval |
+| Batch replay: one 14-day episode (303,264 scored readings) | 5.0 s (16.5 µs per reading) |
+| Peak resident memory (whole process, batch episode included) | 852 MB |
+| Memory after loading the model | 293 MB |
+| Model artifacts on disk | 17.6 MB |
+
+The live figure is the latency the challenge asks for: from "the new half-hour of readings is available" to
+"p-values and alerts ready for Layer 4". Detection-quality figures for the same model are measured separately on
+real 2024 data.
